@@ -1,990 +1,670 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>我的生活工作台</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#a47ec4" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="我的工作台" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(180deg, #e8dff7 0%, #f7f2fa 40%, #faeef7 100%);
-      --sidebar-bg: rgba(255, 255, 255, 0.65);
-      --card-bg: rgba(255, 255, 255, 0.82);
-      --primary: #a47ec4;
-      --primary-dark: #8c65ac;
-      --accent: #e8a5d0;
-      --text: #4a3f5c;
-      --text-light: #7d7193;
-      --shadow: 0 8px 32px rgba(164, 126, 196, 0.15);
-      --radius: 22px;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>我的生活工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#7c3aed"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="我的工作台"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<style>
+:root {
+  --bg: #0f0a1a;
+  --bg2: #1a1030;
+  --card: rgba(30,20,55,0.85);
+  --card-hover: rgba(40,28,70,0.9);
+  --primary: #8b5cf6;
+  --primary-light: #a78bfa;
+  --accent: #c084fc;
+  --accent2: #f472b6;
+  --gold: #f59e0b;
+  --green: #34d399;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --text: #e2e0f0;
+  --text2: #a098c0;
+  --text3: #6b6280;
+  --border: rgba(139,92,246,0.15);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Noto Sans SC',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;display:flex;overflow:hidden;
+}
+/* 侧边栏 */
+.sidebar{
+  width:84px;flex-shrink:0;
+  background:rgba(15,10,26,0.95);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 0 12px;gap:4px;z-index:10;
+  overflow-y:auto;
+}
+.avatar-ring{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--primary));
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:6px;flex-shrink:0;
+}
+.sidebar .user-name{font-size:10px;color:var(--text2);margin-bottom:8px;flex-shrink:0;}
+.nav-item{
+  width:68px;display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:8px 4px;border-radius:14px;cursor:pointer;
+  transition:all 0.2s;color:var(--text3);user-select:none;flex-shrink:0;
+}
+.nav-item .icon{
+  width:34px;height:34px;border-radius:12px;display:flex;
+  align-items:center;justify-content:center;font-size:17px;
+  background:rgba(139,92,246,0.08);transition:all 0.2s;
+}
+.nav-item .label{font-size:10px;font-weight:500;text-align:center;line-height:1.2;}
+.nav-item:hover{color:var(--text2)}
+.nav-item:hover .icon{background:rgba(139,92,246,0.18)}
+.nav-item.active{color:var(--primary-light)}
+.nav-item.active .icon{
+  background:linear-gradient(135deg,var(--accent),var(--primary));
+  color:#fff;box-shadow:0 4px 14px rgba(139,92,246,0.35);
+}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      overflow: hidden;
-    }
+/* 主内容 */
+.main{flex:1;overflow-y:auto;padding:20px 18px;}
+.section{display:none;animation:fadeIn 0.3s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* 左侧边栏 */
-    .sidebar {
-      width: 90px;
-      flex-shrink: 0;
-      background: var(--sidebar-bg);
-      backdrop-filter: blur(20px);
-      border-right: 1px solid rgba(255,255,255,0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 28px 0 18px;
-      gap: 14px;
-      box-shadow: var(--shadow);
-      z-index: 10;
-    }
+/* 头部 */
+.page-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.page-header .icon{font-size:24px}
+.page-header h1{font-size:22px;font-weight:700}
+.page-header .sub{font-size:12px;color:var(--text3);margin-top:2px}
+.date-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 12px;border-radius:20px;background:rgba(139,92,246,0.12);
+  font-size:12px;color:var(--primary-light);margin-left:auto;
+}
 
-    .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: #fff;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 14px rgba(164,126,196,0.3);
-    }
+/* 卡片 */
+.card{
+  background:var(--card);backdrop-filter:blur(20px);
+  border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+}
+.card-title{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-subtitle{font-size:12px;color:var(--text3);margin-bottom:10px}
 
-    .nav-item {
-      width: 66px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      padding: 10px 6px;
-      border-radius: 18px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      color: var(--text-light);
-      user-select: none;
-    }
-    .nav-item .icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      background: rgba(255,255,255,0.5);
-      transition: all 0.25s ease;
-    }
-    .nav-item .label { font-size: 11px; font-weight: 500; }
-    .nav-item:hover { color: var(--primary); }
-    .nav-item:hover .icon { background: rgba(164,126,196,0.12); }
-    .nav-item.active {
-      color: var(--primary-dark);
-    }
-    .nav-item.active .icon {
-      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
-      color: #fff;
-      box-shadow: 0 4px 14px rgba(164,126,196,0.35);
-    }
+/* 进度圆环 */
+.ring-wrap{
+  display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;
+  padding:10px 0;
+}
+.ring-box{text-align:center}
+.ring-box svg{width:80px;height:80px}
+.ring-box .pct{font-size:18px;font-weight:700;fill:var(--text)}
+.ring-box .label{font-size:11px;color:var(--text3);margin-top:4px}
 
-    /* 主内容区 */
-    .main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 28px 26px;
-    }
+/* 九宫格 */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid-item{
+  background:rgba(139,92,246,0.06);border-radius:var(--radius-sm);
+  padding:14px 10px;text-align:center;cursor:pointer;
+  border:1px solid transparent;transition:all 0.2s;
+}
+.grid-item:hover{background:rgba(139,92,246,0.12);border-color:var(--border)}
+.grid-item .gi-icon{font-size:26px;margin-bottom:4px}
+.grid-item .gi-name{font-size:12px;font-weight:600;color:var(--text2)}
+.grid-item .gi-stat{font-size:10px;color:var(--text3);margin-top:2px}
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .header .title-icon {
-      font-size: 28px;
-    }
-    .header h1 {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .header .subtitle {
-      font-size: 13px;
-      color: var(--text-light);
-      margin-top: 2px;
-    }
+/* 输入控件 */
+input,textarea,select{
+  width:100%;padding:10px 12px;border:1px solid var(--border);
+  border-radius:12px;background:rgba(20,12,40,0.6);font-family:inherit;
+  font-size:13px;color:var(--text);outline:none;transition:all 0.2s;margin-bottom:10px;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(139,92,246,0.12)}
+textarea{min-height:70px;resize:vertical}
 
-    .card {
-      background: var(--card-bg);
-      backdrop-filter: blur(18px);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.7);
-    }
-    .card-title {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:10px 18px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--primary));
+  color:#fff;font-weight:600;font-size:13px;cursor:pointer;
+  box-shadow:0 4px 16px rgba(139,92,246,0.3);transition:all 0.15s;
+  font-family:inherit;
+}
+.btn:active{transform:scale(0.97)}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:10px}
+.btn-outline{
+  background:transparent;border:1px solid var(--primary);
+  color:var(--primary-light);box-shadow:none;
+}
+.btn-danger{background:linear-gradient(135deg,#f87171,#dc2626);box-shadow:0 4px 14px rgba(248,113,113,0.3)}
 
-    .section { display: none; animation: fadeIn 0.35s ease; }
-    .section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.col{flex:1;min-width:100px}
 
-    /* 表单通用 */
-    input, textarea, select {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid rgba(164,126,196,0.25);
-      border-radius: 14px;
-      background: rgba(255,255,255,0.7);
-      font-family: inherit;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      transition: all 0.2s;
-      margin-bottom: 12px;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--primary);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(164,126,196,0.12);
-    }
-    textarea { min-height: 80px; resize: vertical; }
+/* 标签 */
+.tag{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:5px 10px;border-radius:16px;background:rgba(139,92,246,0.1);
+  color:var(--primary-light);font-size:11px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;margin:0 4px 6px 0;
+}
+.tag.active,.tag:hover{background:var(--primary);color:#fff}
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 12px 22px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(164,126,196,0.35);
-      transition: transform 0.15s;
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn-secondary {
-      background: rgba(164,126,196,0.12);
-      color: var(--primary-dark);
-      box-shadow: none;
-    }
+/* 列表 */
+.list-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:rgba(20,12,40,0.5);border-radius:12px;
+  margin-bottom:8px;font-size:13px;
+}
+.list-item .info{display:flex;flex-direction:column}
+.list-item .meta{font-size:11px;color:var(--text3);margin-top:2px}
+.list-item .del{color:var(--red);cursor:pointer;font-size:12px;opacity:0.7}
+.list-item .del:hover{opacity:1}
 
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .col-2 { flex: 1; min-width: 140px; }
+.empty{text-align:center;color:var(--text3);font-size:12px;padding:14px}
 
-    .tag {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      background: rgba(164,126,196,0.12);
-      color: var(--primary-dark);
-      font-size: 12px;
-      font-weight: 500;
-      margin: 0 6px 8px 0;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tag.active { background: var(--primary); color: #fff; }
+/* 进度条 */
+.progress-bar{
+  height:8px;background:rgba(139,92,246,0.1);border-radius:4px;
+  overflow:hidden;margin:6px 0;
+}
+.progress-fill{
+  height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--accent),var(--primary));
+  transition:width 0.5s ease;
+}
 
-    .list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      background: rgba(255,255,255,0.6);
-      border-radius: 14px;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-    .list-item .info { display: flex; flex-direction: column; }
-    .list-item .meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
-    .list-item .amount { font-weight: 700; font-size: 16px; }
-    .list-item .del { color: #c97a9a; cursor: pointer; font-size: 13px; }
+/* 皮肤护理时间轴 */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{
+  content:'';position:absolute;left:6px;top:4px;bottom:4px;
+  width:2px;background:var(--border);
+}
+.tl-item{
+  position:relative;padding:6px 0 6px 18px;font-size:13px;
+  display:flex;align-items:center;gap:8px;
+}
+.tl-item::before{
+  content:'';position:absolute;left:-17px;top:12px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--primary);border:2px solid var(--bg);
+}
+.tl-item .time{font-size:11px;color:var(--text3);min-width:40px}
+.tl-item.done::before{background:var(--green)}
 
-    .empty { text-align: center; color: var(--text-light); font-size: 13px; padding: 18px; }
+/* 转盘 */
+.wheel-wrap{position:relative;text-align:center;padding:10px 0}
+.wheel-text{
+  font-size:40px;animation:bounce 0.5s ease;display:inline-block;
+}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 
-    .fortune-score {
-      display: flex;
-      justify-content: space-around;
-      text-align: center;
-      margin: 10px 0;
-    }
-    .fortune-score .item { display: flex; flex-direction: column; gap: 6px; }
-    .fortune-score .num {
-      width: 58px; height: 58px; border-radius: 50%;
-      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
-      color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 20px; font-weight: 700; margin: 0 auto;
-      box-shadow: 0 4px 12px rgba(164,126,196,0.3);
-    }
-    .fortune-score .label { font-size: 12px; color: var(--text-light); }
+/* 小额 */
+.stat-row{display:flex;justify-content:space-around;text-align:center;margin:8px 0}
+.stat-item .val{font-size:20px;font-weight:700}
+.stat-item .lbl{font-size:11px;color:var(--text3)}
 
-    .advice-list { list-style: none; }
-    .advice-list li {
-      padding: 10px 0; border-bottom: 1px solid rgba(164,126,196,0.1);
-      font-size: 14px; display: flex; gap: 8px; align-items: flex-start;
-    }
-    .advice-list li:last-child { border: none; }
+.check-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.check-row:last-child{border:none}
+.check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.check-row .done{text-decoration:line-through;color:var(--text3)}
 
-    /* 折叠面板 */
-    .collapse-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      padding: 8px 0;
-      user-select: none;
-    }
-    .collapse-header .arrow {
-      transition: transform 0.25s;
-      font-size: 14px;
-      color: var(--text-light);
-    }
-    .collapse-header.open .arrow { transform: rotate(90deg); }
-    .collapse-body { display: none; }
-    .collapse-body.open { display: block; }
-
-    /* 运动标签列表 */
-    .exercise-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .ex-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 14px;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.65);
-      border: 1.5px solid rgba(164,126,196,0.2);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      user-select: none;
-    }
-    .ex-tag:hover { border-color: var(--primary); background: rgba(164,126,196,0.06); }
-    .ex-tag.selected {
-      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
-      color: #fff;
-      border-color: transparent;
-      box-shadow: 0 3px 10px rgba(164,126,196,0.3);
-    }
-    .ex-tag .emoji { font-size: 16px; }
-    .ex-tag .time { font-size: 11px; opacity: 0.75; }
-
-    /* 弹出选项面板 */
-    .popup-overlay {
-      position: fixed; top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.3); z-index: 100;
-      display: none; align-items: center; justify-content: center;
-    }
-    .popup-overlay.show { display: flex; }
-    .popup-card {
-      background: #fff; border-radius: 22px; padding: 20px;
-      width: 90%; max-width: 360px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-    }
-    .popup-card .popup-title {
-      font-size: 17px; font-weight: 700; margin-bottom: 6px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .popup-card .popup-subtitle { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
-    .option-row {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
-    }
-    .option-btn {
-      padding: 10px 16px; border-radius: 22px; border: 1.5px solid rgba(164,126,196,0.25);
-      background: rgba(255,255,255,0.8); font-size: 13px; cursor: pointer;
-      transition: all 0.2s; font-family: inherit; color: var(--text);
-    }
-    .option-btn:hover { border-color: var(--primary); background: rgba(164,126,196,0.06); }
-    .option-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .popup-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .cal-badge {
-      display: inline-block; padding: 4px 10px; border-radius: 12px;
-      background: #fff3e0; color: #e67e22; font-size: 12px; font-weight: 600;
-      margin-left: auto;
-    }
-    .exercise-card {
-      background: rgba(255,255,255,0.65);
-      border-radius: 16px;
-      padding: 14px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 2px solid transparent;
-    }
-    .exercise-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(164,126,196,0.15); }
-    .exercise-card.selected { border-color: var(--primary); background: rgba(164,126,196,0.08); }
-    .exercise-card .emoji { font-size: 30px; margin-bottom: 6px; }
-    .exercise-card .name { font-size: 13px; font-weight: 600; }
-    .exercise-card .time { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-
-    .outfit-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 12px;
-    }
-    .outfit-card {
-      background: rgba(255,255,255,0.65);
-      border-radius: 16px;
-      padding: 12px;
-      text-align: center;
-      font-size: 13px;
-    }
-    .outfit-card .emoji { font-size: 32px; margin-bottom: 6px; }
-    .outfit-card .name { font-weight: 600; }
-
-    @media (max-width: 640px) {
-      /* 导航栏始终保持在左侧，不切换到顶部 */
-      .sidebar {
-        width: 64px;
-        padding: 16px 0 10px;
-        gap: 10px;
-      }
-      .avatar { width: 40px; height: 40px; font-size: 18px; margin-bottom: 6px; }
-      .nav-item { width: 48px; padding: 6px 2px; }
-      .nav-item .icon { width: 32px; height: 32px; font-size: 16px; border-radius: 12px; }
-      .nav-item .label { font-size: 9px; }
-      .main { padding: 14px; }
-    }
-  </style>
+/* 移动端适配 */
+@media(max-width:640px){
+  .sidebar{width:60px;padding:14px 0 8px;gap:2px}
+  .avatar-ring{width:36px;height:36px;font-size:16px}
+  .nav-item{width:50px;padding:6px 2px}
+  .nav-item .icon{width:28px;height:28px;font-size:14px;border-radius:10px}
+  .nav-item .label{font-size:8px}
+  .main{padding:14px 10px}
+  .grid-3{grid-template-columns:repeat(3,1fr);gap:6px}
+  .grid-item{padding:10px 6px}
+  .ring-box svg{width:60px;height:60px}
+}
+</style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="avatar">我</div>
-    <div class="nav-item active" data-page="fortune">
-      <div class="icon">🔮</div>
-      <span class="label">运势</span>
-    </div>
-    <div class="nav-item" data-page="diet">
-      <div class="icon">🥗</div>
-      <span class="label">饮食</span>
-    </div>
-    <div class="nav-item" data-page="workout">
-      <div class="icon">🧘‍♀️</div>
-      <span class="label">塑型运动</span>
-    </div>
-    <div class="nav-item" data-page="money">
-      <div class="icon">💰</div>
-      <span class="label">记账</span>
-    </div>
-    <div class="nav-item" data-page="outfit">
-      <div class="icon">👗</div>
-      <span class="label">穿搭</span>
-    </div>
-    <div class="nav-item" data-page="makeup">
-      <div class="icon">💄</div>
-      <span class="label">妆容</span>
-    </div>
-  </aside>
 
-  <main class="main">
-    <!-- 运势 -->
-    <section id="fortune" class="section active">
-      <div class="header">
-        <span class="title-icon">🔮</span>
-        <div>
-          <h1>今日运势</h1>
-          <div class="subtitle" id="fortuneDate"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">✨ 综合评分</div>
-        <div class="fortune-score">
-          <div class="item"><div class="num" id="overall">88</div><span class="label">综合</span></div>
-          <div class="item"><div class="num" id="love">92</div><span class="label">爱情</span></div>
-          <div class="item"><div class="num" id="career">85</div><span class="label">事业</span></div>
-          <div class="item"><div class="num" id="wealth">79</div><span class="label">财富</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">💡 今日建议</div>
-        <ul class="advice-list">
-          <li><span>🌟</span> 今日适合穿浅色系衣物，提升个人气场。</li>
-          <li><span>🍀</span> 遇到小问题时保持耐心，会有贵人相助。</li>
-          <li><span>⚡</span> 下午 2-4 点是效率高峰，安排重要事项。</li>
-          <li><span>💜</span> 睡前做 5 分钟冥想，助眠又养心。</li>
-        </ul>
-      </div>
-    </section>
+<aside class="sidebar">
+  <div class="avatar-ring">✨</div>
+  <div class="user-name">我的工作台</div>
+  <div class="nav-item active" data-p="dashboard"><div class="icon">🏠</div><span class="label">今日</span></div>
+  <div class="nav-item" data-p="todo"><div class="icon">✅</div><span class="label">待办</span></div>
+  <div class="nav-item" data-p="fitness"><div class="icon">💪</div><span class="label">健身</span></div>
+  <div class="nav-item" data-p="skincare"><div class="icon">✨</div><span class="label">护肤</span></div>
+  <div class="nav-item" data-p="outfit"><div class="icon">👗</div><span class="label">穿搭</span></div>
+  <div class="nav-item" data-p="food"><div class="icon">🍳</div><span class="label">一人食</span></div>
+  <div class="nav-item" data-p="finance"><div class="icon">💰</div><span class="label">财务</span></div>
+  <div class="nav-item" data-p="weight"><div class="icon">⚖️</div><span class="label">体重</span></div>
+  <div class="nav-item" data-p="study"><div class="icon">📚</div><span class="label">学习</span></div>
+  <div class="nav-item" data-p="news"><div class="icon">📰</div><span class="label">资讯</span></div>
+</aside>
 
-    <!-- 饮食 -->
-    <section id="diet" class="section">
-      <div class="header">
-        <span class="title-icon">🥗</span>
-        <div>
-          <h1>饮食记录</h1>
-          <div class="subtitle">记录一日三餐，吃得健康又好看</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🍽️ 今天吃了什么</div>
-        <select id="mealType">
-          <option value="早餐">早餐</option>
-          <option value="午餐">午餐</option>
-          <option value="晚餐">晚餐</option>
-          <option value="加餐">加餐</option>
-        </select>
-        <input type="text" id="mealContent" placeholder="例如：燕麦碗 + 蓝莓 + 黑咖啡" />
-        <input type="number" id="mealCal" placeholder="估算热量（千卡）" />
-        <button class="btn" onclick="addMeal()">➕ 添加记录</button>
-      </div>
-      <div class="card">
-        <div class="card-title">🥗 每日搭配推荐（点击加入今日）</div>
-        <p style="font-size:12px; color:var(--text-light); margin-bottom:12px;">点击下方食物可直接添加到今日饮食，热量自动计算</p>
-        <div id="mealPicker" class="exercise-grid"></div>
-        <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(164,126,196,0.08); border-radius:14px;">
-          <span style="font-size:13px; color:var(--text-light);">今日累计热量</span>
-          <span id="todayCal" style="font-size:18px; font-weight:700; color:var(--primary-dark);">0 千卡</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📋 今日饮食清单</div>
-        <div id="mealList"><div class="empty">还没有记录哦～</div></div>
-      </div>
-    </section>
+<main class="main" id="mainContent"></main>
 
-    <!-- 塑型运动 -->
-    <section id="workout" class="section">
-      <div class="header">
-        <span class="title-icon">🧘‍♀️</span>
-        <div>
-          <h1>塑型运动</h1>
-          <div class="subtitle">点击标签打卡/取消，每天坚持记录</div>
-        </div>
-      </div>
-      <!-- 折叠面板 -->
-      <div class="card">
-        <div class="collapse-header open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-          <div class="card-title" style="margin-bottom:0;">🏃‍♀️ 有氧运动</div>
-          <span class="arrow">▶</span>
-        </div>
-        <div class="collapse-body open">
-          <div class="exercise-tags" id="cardioTags"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="collapse-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-          <div class="card-title" style="margin-bottom:0;">💪 力量训练</div>
-          <span class="arrow">▶</span>
-        </div>
-        <div class="collapse-body">
-          <div class="exercise-tags" id="strengthTags"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="collapse-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
-          <div class="card-title" style="margin-bottom:0;">🧘 核心与柔韧</div>
-          <span class="arrow">▶</span>
-        </div>
-        <div class="collapse-body">
-          <div class="exercise-tags" id="coreTags"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📅 今日打卡 <span id="todayCount" style="font-size:13px;color:var(--text-light);font-weight:400;">0 项</span></div>
-        <div id="workoutDone"><div class="empty">今天还没有打卡～</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🗓️ 历史记录</div>
-        <div id="workoutHistory"><div class="empty">还没有历史记录～</div></div>
-      </div>
-    </section>
+<script>
+// === 工具函数 ===
+const today=()=>new Date().toISOString().split('T')[0];
+const getD=(k)=>JSON.parse(localStorage.getItem('wb_'+k)||'[]');
+const setD=(k,v)=>localStorage.setItem('wb_'+k,JSON.stringify(v));
+const now=new Date();
+const week=['日','一','二','三','四','五','六'];
+const dateStr=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${week[now.getDay()]}`;
+const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
 
-    <!-- 记账 -->
-    <section id="money" class="section">
-      <div class="header">
-        <span class="title-icon">💰</span>
-        <div>
-          <h1>记账本</h1>
-          <div class="subtitle">每一笔都清清楚楚</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">➕ 记一笔</div>
-        <div class="row">
-          <div class="col-2">
-            <select id="moneyType">
-              <option value="支出">支出</option>
-              <option value="收入">收入</option>
-            </select>
-          </div>
-          <div class="col-2">
-            <input type="number" id="moneyAmount" placeholder="金额" />
-          </div>
-        </div>
-        <input type="text" id="moneyTag" placeholder="分类：餐饮 / 交通 / 购物 / 美妆…" />
-        <button class="btn" onclick="addMoney()">📝 保存</button>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 本月收支</div>
-        <div class="row" style="justify-content:space-around; text-align:center; margin-bottom:12px;">
-          <div><div style="font-size:22px; font-weight:700; color:#7bb36a;" id="inTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">收入</div></div>
-          <div><div style="font-size:22px; font-weight:700; color:#d67a8a;" id="outTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">支出</div></div>
-          <div><div style="font-size:22px; font-weight:700; color:var(--primary-dark);" id="netTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">结余</div></div>
-        </div>
-        <div id="moneyList"><div class="empty">还没有记账记录～</div></div>
-      </div>
-    </section>
+// === 导航 ===
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    el.classList.add('active');
+    renderPage(el.dataset.p);
+  });
+});
 
-    <!-- 穿搭 -->
-    <section id="outfit" class="section">
-      <div class="header">
-        <span class="title-icon">👗</span>
-        <div>
-          <h1>今日穿搭</h1>
-          <div class="subtitle">根据天气和心情搭配一身</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🌤️ 天气参考</div>
-        <input type="text" id="weatherInput" placeholder="输入城市，例如：深圳" value="深圳" />
-        <button class="btn" onclick="genOutfit()">✨ 生成穿搭建议</button>
-        <div id="outfitResult" style="margin-top:16px;"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🧥 我的衣橱灵感</div>
-        <div class="outfit-grid">
-          <div class="outfit-card"><div class="emoji">👚</div><div class="name">白 T 恤</div></div>
-          <div class="outfit-card"><div class="emoji">👖</div><div class="name">阔腿裤</div></div>
-          <div class="outfit-card"><div class="emoji">🧥</div><div class="name">薄风衣</div></div>
-          <div class="outfit-card"><div class="emoji">👟</div><div class="name">小白鞋</div></div>
-          <div class="outfit-card"><div class="emoji">👜</div><div class="name">托特包</div></div>
-          <div class="outfit-card"><div class="emoji">🧢</div><div class="name">棒球帽</div></div>
-        </div>
-      </div>
-    </section>
+// === 页面渲染 ===
+function renderPage(page){
+  const m=document.getElementById('mainContent');
+  switch(page){
+    case 'dashboard':m.innerHTML=dashboardHTML();initDashboard();break;
+    case 'todo':m.innerHTML=todoHTML();initTodo();break;
+    case 'fitness':m.innerHTML=fitnessHTML();initFitness();break;
+    case 'skincare':m.innerHTML=skincareHTML();initSkincare();break;
+    case 'outfit':m.innerHTML=outfitHTML();initOutfit();break;
+    case 'food':m.innerHTML=foodHTML();initFood();break;
+    case 'finance':m.innerHTML=financeHTML();initFinance();break;
+    case 'weight':m.innerHTML=weightHTML();initWeight();break;
+    case 'study':m.innerHTML=studyHTML();initStudy();break;
+    case 'news':m.innerHTML=newsHTML();initNews();break;
+  }
+}
 
-    <!-- 妆容 -->
-    <section id="makeup" class="section">
-      <div class="header">
-        <span class="title-icon">💄</span>
-        <div>
-          <h1>妆容灵感</h1>
-          <div class="subtitle">每天一个妆容主题，记录好心情</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🎨 今日妆容主题</div>
-        <div id="makeupTheme" style="font-size:18px; font-weight:700; color:var(--primary-dark); margin-bottom:10px;">清透裸妆</div>
-        <p style="font-size:14px; color:var(--text-light); line-height:1.7;" id="makeupDesc">
-          以自然底妆为主，搭配奶茶色唇釉和大地色眼影，适合日常通勤。
-        </p>
-        <button class="btn" onclick="randomMakeup()">🎲 换一个灵感</button>
-      </div>
-      <div class="card">
-        <div class="card-title">📝 妆容日记</div>
-        <textarea id="makeupNote" placeholder="今天用了什么新品？效果怎么样？"></textarea>
-        <button class="btn" onclick="saveMakeupNote()">💾 保存日记</button>
-        <div id="makeupNotes" style="margin-top:16px;"></div>
-      </div>
-    </section>
-  </main>
+// ============================================================
+// 首页 Dashboard
+// ============================================================
+function dashboardHTML(){
+  const todoCount=getD('todos').filter(t=>t.done).length;
+  const todoTotal=getD('todos').length;
+  const todoPct=todoTotal?Math.round(todoCount/todoTotal*100):0;
+  const fitCount=getD('workouts').filter(w=>w.date===today()).length;
+  const fitPct=Math.min(fitCount*25,100);
+  const skinCount=getD('skincareDone').filter(s=>s.date===today()).length;
+  const skinPct=Math.min(skinCount*20,100);
+  return `<section class="section active">
+<div class="page-header"><span class="icon">✨</span><div><h1>今日成长</h1><div class="sub">${dateStr}</div></div><span class="date-badge">🌙 晚安计划</span></div>
 
-  <!-- 运动弹出选择面板 -->
-  <div class="popup-overlay" id="workoutPopup">
-    <div class="popup-card">
-      <div class="popup-title" id="popupTitle"></div>
-      <div class="popup-subtitle">选择具体时长/数量，自动估算消耗热量</div>
-      <div class="option-row" id="popupOptions"></div>
-      <div id="popupCal" style="font-size:13px; color:var(--text-light); margin-bottom:14px;"></div>
-      <div class="popup-actions">
-        <button class="btn btn-secondary" onclick="closePopup()">取消</button>
-        <button class="btn" onclick="confirmWorkout()">✅ 确认打卡</button>
-      </div>
-    </div>
+<div class="card">
+  <div class="card-title">📊 今日完成度</div>
+  <div class="ring-wrap">
+    <div class="ring-box"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(139,92,246,0.15)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="url(#g1)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${todoPct*2.64} 264" transform="rotate(-90 50 50)"/><defs><linearGradient id="g1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><text x="50" y="48" text-anchor="middle" class="pct">${todoPct}%</text><text x="50" y="62" text-anchor="middle" font-size="9" fill="#6b6280">待办</text></svg><div class="label">待办完成</div></div>
+    <div class="ring-box"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(244,114,182,0.15)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="url(#g2)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${fitPct*2.64} 264" transform="rotate(-90 50 50)"/><defs><linearGradient id="g2"><stop offset="0" stop-color="#f472b6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><text x="50" y="48" text-anchor="middle" class="pct">${fitPct}%</text><text x="50" y="62" text-anchor="middle" font-size="9" fill="#6b6280">健身</text></svg><div class="label">健身打卡</div></div>
+    <div class="ring-box"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(52,211,153,0.15)" stroke-width="8"/><circle cx="50" cy="50" r="42" fill="none" stroke="url(#g3)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${skinPct*2.64} 264" transform="rotate(-90 50 50)"/><defs><linearGradient id="g3"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><text x="50" y="48" text-anchor="middle" class="pct">${skinPct}%</text><text x="50" y="62" text-anchor="middle" font-size="9" fill="#6b6280">护肤</text></svg><div class="label">护肤打卡</div></div>
   </div>
+</div>
 
-  <script>
-    // 侧边栏切换
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        item.classList.add('active');
-        document.getElementById(item.dataset.page).classList.add('active');
-      });
-    });
+<div class="card">
+  <div class="card-title">🎯 快捷入口</div>
+  <div class="grid-3">
+    <div class="grid-item" onclick="switchPage('todo')"><div class="gi-icon">✅</div><div class="gi-name">待办清单</div><div class="gi-stat">${todoCount}/${todoTotal} 已完成</div></div>
+    <div class="grid-item" onclick="switchPage('fitness')"><div class="gi-icon">💪</div><div class="gi-name">健身打卡</div><div class="gi-stat">${fitCount} 项已完成</div></div>
+    <div class="grid-item" onclick="switchPage('weight')"><div class="gi-icon">⚖️</div><div class="gi-name">体重管理</div><div class="gi-stat">记录每一天</div></div>
+    <div class="grid-item" onclick="switchPage('skincare')"><div class="gi-icon">✨</div><div class="gi-name">护肤日常</div><div class="gi-stat">${skinCount} 项已完成</div></div>
+    <div class="grid-item" onclick="switchPage('study')"><div class="gi-icon">📚</div><div class="gi-name">学习打卡</div><div class="gi-stat">英语 · 韩语</div></div>
+    <div class="grid-item" onclick="switchPage('food')"><div class="gi-icon">🍳</div><div class="gi-name">一人食</div><div class="gi-stat">今天吃什么</div></div>
+    <div class="grid-item" onclick="switchPage('finance')"><div class="gi-icon">💰</div><div class="gi-name">财务储蓄</div><div class="gi-stat">记账·存钱</div></div>
+    <div class="grid-item" onclick="switchPage('outfit')"><div class="gi-icon">👗</div><div class="gi-name">穿搭衣橱</div><div class="gi-stat">26°穿衣法则</div></div>
+    <div class="grid-item" onclick="switchPage('news')"><div class="gi-icon">📰</div><div class="gi-name">每日资讯</div><div class="gi-stat">行业报告</div></div>
+  </div>
+</div>
+</section>`;
+}
+function initDashboard(){}
+function switchPage(p){
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.querySelector(`[data-p="${p}"]`).classList.add('active');
+  renderPage(p);
+}
 
-    // 工具函数
-    const today = () => new Date().toISOString().split('T')[0];
-    const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
-    const setData = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+// ============================================================
+// 待办清单
+// ============================================================
+function todoHTML(){
+  const list=getD('todos');
+  let items=list.length?list.map((t,i)=>`<div class="check-row"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTodo(${i})"><span class="${t.done?'done':''}">${t.text}</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">${t.date}</span><span class="del" onclick="delTodo(${i})" style="margin-left:8px">✕</span></div>`).join(''):'<div class="empty">还没有待办事项～</div>';
+  return `<section class="section active">
+<div class="page-header"><span class="icon">✅</span><div><h1>今日待办</h1><div class="sub">把重要的事情一件件完成</div></div><span class="date-badge">${dateStr}</span></div>
+<div class="card">
+  <div class="card-title">➕ 新增待办</div>
+  <div class="row"><div class="col"><input id="todoInput" placeholder="输入待办事项..."></div><button class="btn btn-sm" onclick="addTodo()">添加</button></div>
+</div>
+<div class="card"><div class="card-title">📋 待办列表</div><div id="todoList">${items}</div></div>
+</section>`;
+}
+function initTodo(){}
+function addTodo(){
+  const inp=document.getElementById('todoInput');
+  const text=inp.value.trim();
+  if(!text)return;
+  const d=getD('todos');d.push({text,done:false,date:today()});setD('todos',d);
+  inp.value='';renderPage('todo');
+}
+function toggleTodo(i){const d=getD('todos');d[i].done=!d[i].done;setD('todos',d);renderPage('todo');}
+function delTodo(i){const d=getD('todos');d.splice(i,1);setD('todos',d);renderPage('todo');}
 
-    // 运势日期
-    const now = new Date();
-    const week = ['日','一','二','三','四','五','六'];
-    document.getElementById('fortuneDate').textContent =
-      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${week[now.getDay()]} · 今天也要好好爱自己呀`;
+// ============================================================
+// 健身打卡
+// ============================================================
+function fitnessHTML(){
+  const todayList=getD('workouts').filter(w=>w.date===today());
+  const cal=todayList.reduce((s,w)=>s+(w.cal||0),0);
+  const list=todayList.length?todayList.map((w,i)=>`<div class="list-item"><div class="info"><div>${w.name} · ${w.detail}</div><div class="meta">🔥 ${w.cal||0} 千卡</div></div><span class="del" onclick="delWorkout('${w.name}')">取消</span></div>`).join(''):'<div class="empty">今天还没有运动打卡～</div>';
+  const all=getD('workouts');
+  const byDate={};all.forEach(w=>{(byDate[w.date]=byDate[w.date]||[]).push(w)});
+  const dates=Object.keys(byDate).sort().reverse();
+  let hist='';
+  if(dates.length){
+    hist=dates.slice(0,7).map(d=>{const dayCal=byDate[d].reduce((s,w)=>s+(w.cal||0),0);return`<div style="margin-bottom:10px;padding:10px 12px;background:rgba(20,12,40,0.5);border-radius:12px;"><div style="font-weight:700;font-size:13px;margin-bottom:4px;color:var(--primary-light);">📅 ${d} · 🔥${dayCal}千卡</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${byDate[d].map(w=>`<span class="tag active">${w.name} ${w.detail}</span>`).join('')}</div></div>`}).join('');
+  }else{hist='<div class="empty">还没有运动记录～</div>';}
+  return `<section class="section active">
+<div class="page-header"><span class="icon">💪</span><div><h1>健身打卡</h1><div class="sub">今日消耗 🔥${cal} 千卡</div></div></div>
+<div class="card"><div class="card-title">🏃 有氧运动</div><div class="row" id="cardioTags" style="gap:6px"></div></div>
+<div class="card"><div class="card-title">🏋️ 力量训练</div><div class="row" id="strengthTags" style="gap:6px"></div></div>
+<div class="card"><div class="card-title">🧘 核心柔韧</div><div class="row" id="coreTags" style="gap:6px"></div></div>
+<div class="card"><div class="card-title">📅 今日打卡</div><div id="workoutDone">${list}</div></div>
+<div class="card"><div class="card-title">🗓️ 最近记录</div>${hist}</div>
+</section>`;
+}
+function initFitness(){
+  const groups={cardio:[
+    {e:'💃',n:'爵士舞',u:'min',op:[15,30,45,60],cp:5},
+    {e:'🏸',n:'羽毛球',u:'min',op:[20,30,45,60],cp:6},
+    {e:'🏃',n:'慢跑',u:'km',op:[1,2,3,5,8],cp:60},
+    {e:'🏊',n:'游泳',u:'min',op:[20,30,45,60],cp:8},
+    {e:'⚡',n:'跳绳',u:'个',op:[100,200,300,500,1000],cp:0.1},
+    {e:'🚶',n:'快走',u:'min',op:[15,20,30,45,60],cp:4},
+    {e:'🚴',n:'骑行',u:'km',op:[3,5,8,10,15],cp:35}
+  ],strength:[
+    {e:'🏋️',n:'哑铃',u:'组',op:[2,3,4,5],cp:25},
+    {e:'🦵',n:'深蹲',u:'个',op:[15,20,30,50],cp:0.5},
+    {e:'🔄',n:'硬拉',u:'个',op:[10,12,15,20],cp:1.5},
+    {e:'💪',n:'臀桥',u:'个',op:[15,20,30,50],cp:0.4},
+    {e:'🤜',n:'俯卧撑',u:'个',op:[10,15,20,30],cp:0.6}
+  ],core:[
+    {e:'🧘',n:'瑜伽',u:'min',op:[10,15,20,30,45],cp:3.5},
+    {e:'📏',n:'平板支撑',u:'min',op:[1,2,3,5],cp:4},
+    {e:'🌀',n:'卷腹',u:'个',op:[10,15,20,30,50],cp:0.3},
+    {e:'🤸',n:'拉伸',u:'min',op:[5,10,15,20],cp:2.5},
+    {e:'🎯',n:'俄罗斯转体',u:'个',op:[10,15,20,30],cp:0.4}
+  ]};
+  const uL=(u)=>({min:'分钟',km:'公里',rep:'个',set:'组'}[u]||u);
+  ['cardio','strength','core'].forEach(cat=>{
+    const el=document.getElementById(cat+'Tags');
+    el.innerHTML=groups[cat].map(w=>`<span class="tag" onclick="pickFit('${w.n}','${w.u}',[${w.op}],${w.cp},'${w.e}')">${w.e} ${w.n}</span>`).join('');
+  });
+  markFitTags();
+}
+window.pickFit=function(name,unit,options,calPer,emoji){
+  const todayList=getD('workouts').filter(w=>w.date===today()&&w.name===name);
+  if(todayList.length){const d=getD('workouts');const idx=d.findIndex(w=>w.name===name&&w.date===today());if(idx>=0){d.splice(idx,1);setD('workouts',d);renderPage('fitness');}return;}
+  const val=options[Math.floor(options.length/2)];
+  const uL=(u)=>({min:'分钟',km:'公里',rep:'个',set:'组'}[u]||u);
+  const cal=Math.round(val*calPer);
+  const d=getD('workouts');d.push({name,detail:`${val} ${uL(unit)}`,cal,date:today()});setD('workouts',d);
+  renderPage('fitness');
+};
+function markFitTags(){
+  const todayList=getD('workouts').filter(w=>w.date===today());
+  document.querySelectorAll('#cardioTags .tag,#strengthTags .tag,#coreTags .tag').forEach(t=>{
+    if(todayList.find(w=>t.textContent.includes(w.name)))t.classList.add('active');
+    else t.classList.remove('active');
+  });
+}
+function delWorkout(name){const d=getD('workouts');const idx=d.findIndex(w=>w.name===name&&w.date===today());if(idx>=0){d.splice(idx,1);setD('workouts',d);renderPage('fitness');}}
 
-    // 随机运势分
-    function randScore() { return Math.floor(Math.random()*20)+80; }
-    ['overall','love','career','wealth'].forEach(id => document.getElementById(id).textContent = randScore());
+// ============================================================
+// 护肤日常
+// ============================================================
+function skincareHTML(){
+  const plans=['🧴 洁面','💧 爽肤水','🧪 精华','👁️ 眼霜','🧴 面霜','☀️ 防晒'];
+  const done=getD('skincareDone').filter(s=>s.date===today());
+  const planHTML=plans.map((p,i)=>{const isDone=done.find(d=>d.name===p);return`<div class="check-row"><input type="checkbox" ${isDone?'checked':''} onchange="toggleSkin('${p}')"><span class="${isDone?'done':''}">${p}</span></div>`}).join('');
+  const shelf=getD('skincareShelf');
+  const shelfHTML=shelf.length?shelf.map((s,i)=>`<div class="tag" style="cursor:default">${s}</div>`).join(''):'<span style="font-size:12px;color:var(--text3)">还没有添加护肤品～</span>';
+  return `<section class="section active">
+<div class="page-header"><span class="icon">✨</span><div><h1>护肤日常</h1><div class="sub">好好护肤，好好爱自己</div></div></div>
+<div class="card"><div class="card-title">📋 今日护肤计划</div>${planHTML}</div>
+<div class="card"><div class="card-title">🌤️ 今日防晒提醒</div><div style="text-align:center;padding:12px"><div style="font-size:36px">☀️</div><div style="font-size:15px;font-weight:700;color:var(--gold)">紫外线指数: ${rand(1,10)}</div><div style="font-size:12px;color:var(--text3);margin-top:4px">${['很低，无需防晒','较低，通勤防晒即可','中等，建议SPF30+','较高，务必涂抹防晒','很高，SPF50+ 每2小时补涂','极高，尽量避免外出'][rand(0,5)]}</div></div></div>
+<div class="card"><div class="card-title">🧴 我的护肤品架</div><div class="row" style="gap:6px;margin-bottom:10px">${shelfHTML}</div><div class="row"><div class="col"><input id="skinInput" placeholder="添加护肤品..."></div><button class="btn btn-sm" onclick="addSkinItem()">添加</button></div></div>
+<div class="card"><div class="card-title">🌙 晚间护肤时间轴</div><div class="timeline">
+  <div class="tl-item"><span class="time">18:30</span> 🍽️ 晚餐</div>
+  <div class="tl-item"><span class="time">19:30</span> 🧴 卸妆 + 洁面</div>
+  <div class="tl-item"><span class="time">19:45</span> 💧 爽肤水 + 精华</div>
+  <div class="tl-item"><span class="time">20:00</span> 👁️ 眼霜 + 面霜</div>
+  <div class="tl-item"><span class="time">22:00</span> 🌙 放下手机 · 睡觉</div>
+</div></div>
+</section>`;
+}
+function initSkincare(){}
+function toggleSkin(name){const d=getD('skincareDone');const idx=d.findIndex(s=>s.name===name&&s.date===today());if(idx>=0)d.splice(idx,1);else d.push({name,date:today()});setD('skincareDone',d);renderPage('skincare');}
+function addSkinItem(){const inp=document.getElementById('skinInput');const v=inp.value.trim();if(!v)return;const d=getD('skincareShelf');d.push(v);setD('skincareShelf',d);inp.value='';renderPage('skincare');}
 
-    // 饮食
-    const mealOptions = [
-      { emoji:'🥣', name:'燕麦碗', cal:280 },
-      { emoji:'🫐', name:'蓝莓', cal:85 },
-      { emoji:'☕', name:'黑咖啡', cal:5 },
-      { emoji:'🥚', name:'水煮蛋', cal:78 },
-      { emoji:'🥑', name:'牛油果', cal:160 },
-      { emoji:'🥗', name:'鸡胸沙拉', cal:320 },
-      { emoji:'🍚', name:'糙米饭', cal:215 },
-      { emoji:'🐟', name:'清蒸鱼', cal:180 },
-      { emoji:'🥦', name:'西兰花', cal:55 },
-      { emoji:'🍅', name:'番茄', cal:22 },
-      { emoji:'🍎', name:'苹果', cal:95 },
-      { emoji:'🥛', name:'低脂牛奶', cal:120 },
-      { emoji:'🍞', name:'全麦面包', cal:130 },
-      { emoji:'🍌', name:'香蕉', cal:105 },
-      { emoji:'🥕', name:'胡萝卜', cal:40 },
-      { emoji:'🍇', name:'葡萄', cal:104 }
-    ];
-    function renderMealPicker() {
-      document.getElementById('mealPicker').innerHTML = mealOptions.map(o => `
-        <div class="exercise-card" onclick="pickMeal('${o.name}', ${o.cal})">
-          <div class="emoji">${o.emoji}</div>
-          <div class="name">${o.name}</div>
-          <div class="time">${o.cal} 千卡</div>
-        </div>
-      `).join('');
-    }
-    function pickMeal(name, cal) {
-      const hour = new Date().getHours();
-      let type = '加餐';
-      if (hour < 10) type = '早餐';
-      else if (hour < 14) type = '午餐';
-      else if (hour < 21) type = '晚餐';
-      const data = getData('meals');
-      data.push({ type, content: name, cal: String(cal), date: today() });
-      setData('meals', data);
-      renderMeals();
-      updateTodayCal();
-    }
-    function updateTodayCal() {
-      const data = getData('meals').filter(m => m.date === today());
-      const total = data.reduce((s,m) => s + (Number(m.cal)||0), 0);
-      document.getElementById('todayCal').textContent = total + ' 千卡';
-    }
-    function renderMeals() {
-      const list = getData('meals');
-      const el = document.getElementById('mealList');
-      if (!list.length) { el.innerHTML = '<div class="empty">还没有记录哦～</div>'; updateTodayCal(); return; }
-      el.innerHTML = list.slice().reverse().map((m, idx) => `
-        <div class="list-item">
-          <div class="info">
-            <div>${m.type} · ${m.content}</div>
-            <div class="meta">${m.date} · ${m.cal || '-'} 千卡</div>
-          </div>
-          <span class="del" onclick="delMeal(${list.length-1-idx})">删除</span>
-        </div>
-      `).join('');
-      updateTodayCal();
-    }
-    function addMeal() {
-      const type = document.getElementById('mealType').value;
-      const content = document.getElementById('mealContent').value.trim();
-      const cal = document.getElementById('mealCal').value.trim();
-      if (!content) return alert('请填写吃了什么');
-      const data = getData('meals');
-      data.push({ type, content, cal, date: today() });
-      setData('meals', data);
-      document.getElementById('mealContent').value = '';
-      document.getElementById('mealCal').value = '';
-      renderMeals();
-    }
-    function delMeal(i) { const d=getData('meals'); d.splice(i,1); setData('meals',d); renderMeals(); }
+// ============================================================
+// 穿搭衣橱
+// ============================================================
+function outfitHTML(){
+  const wardrobe=getD('wardrobe');
+  const cats=['👚 上装','👖 下装','👗 连衣裙','🧥 外套','👠 鞋子'];
+  let wHTML='';
+  cats.forEach(cat=>{
+    const items=wardrobe.filter(w=>w.cat===cat);
+    wHTML+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">${cat} (${items.length}件)</div><div class="row" style="gap:6px">`;
+    if(items.length)items.forEach((it,i)=>{wHTML+=`<span class="tag">${it.emoji} ${it.name} <span style="font-size:10px;opacity:0.6">${it.color}</span></span>`;});
+    else wHTML+='<span style="font-size:12px;color:var(--text3)">暂无</span>';
+    wHTML+=`</div></div>`;
+  });
+  return `<section class="section active">
+<div class="page-header"><span class="icon">👗</span><div><h1>穿搭衣橱</h1><div class="sub">26°穿衣法则 · 每天穿得美美的</div></div></div>
+<div class="card"><div class="card-title">🌡️ 26°穿衣法则</div><div style="font-size:13px;color:var(--text3);margin-bottom:12px">当日穿搭温度 = 26°C - 今日室外温度</div>
+<div class="row"><div class="col"><input id="tempInput" type="number" placeholder="今日温度 °C" value="${rand(15,35)}"></div><button class="btn btn-sm" onclick="calcOutfit()">计算穿搭</button></div>
+<div id="outfitResult" style="margin-top:12px;font-size:14px;font-weight:600;color:var(--accent)"></div></div>
+<div class="card"><div class="card-title">🧥 我的衣橱</div>${wHTML}<div class="row" style="margin-top:10px"><div class="col"><input id="wardrobeInput" placeholder="衣服名称"></div><div class="col"><select id="wardrobeCat"><option>👚 上装</option><option>👖 下装</option><option>👗 连衣裙</option><option>🧥 外套</option><option>👠 鞋子</option></select></div></div><div class="row"><div class="col"><input id="wardrobeColor" placeholder="颜色（如：白色）"></div><div class="col"><input id="wardrobeEmoji" placeholder="emoji（如：👚）"></div></div><button class="btn btn-sm" onclick="addWardrobe()">添加到衣橱</button></div>
+</section>`;
+}
+function initOutfit(){}
+function calcOutfit(){
+  const t=parseInt(document.getElementById('tempInput').value)||25;
+  const diff=26-t;
+  let advice='';
+  if(diff<=0)advice='🧊 今天很热！推荐：吊带/短袖 + 短裤/短裙，轻薄透气为主';
+  else if(diff<=3)advice='🌤️ 微热天气：T恤 + 薄长裤/半裙，带件薄开衫备用';
+  else if(diff<=6)advice='🍂 舒适温度：薄针织/衬衫 + 牛仔裤/长裙，可加轻薄外套';
+  else if(diff<=10)advice='🧥 偏凉天气：毛衣/卫衣 + 厚长裤，推荐风衣或牛仔外套';
+  else advice='❄️ 很冷！厚毛衣 + 羽绒服/大衣 + 围巾，注意保暖';
+  document.getElementById('outfitResult').innerHTML=`穿搭温度 = 26 - ${t} = <b>${diff}°C</b> → ${advice}`;
+}
+function addWardrobe(){
+  const name=document.getElementById('wardrobeInput').value.trim();
+  const cat=document.getElementById('wardrobeCat').value;
+  const color=document.getElementById('wardrobeColor').value.trim()||'未标注';
+  const emoji=document.getElementById('wardrobeEmoji').value.trim()||'👗';
+  if(!name)return;
+  const d=getD('wardrobe');d.push({name,cat,color,emoji});setD('wardrobe',d);
+  document.getElementById('wardrobeInput').value='';
+  renderPage('outfit');
+}
 
-    // 运动打卡 —— 每种运动有不同计量方式和选项，附带卡路里估算
-    // 单位: min=分钟, km=公里, rep=次/个, set=组
-    const workoutGroups = {
-      cardio: [
-        { emoji:'💃', name:'爵士舞', unit:'min', options:[15,30,45,60], calPer:5 },
-        { emoji:'🏸', name:'羽毛球', unit:'min', options:[20,30,45,60], calPer:6 },
-        { emoji:'🏃‍♀️', name:'慢跑', unit:'km', options:[1,2,3,5,8], calPer:60 },
-        { emoji:'🏊‍♀️', name:'游泳', unit:'min', options:[20,30,45,60], calPer:8 },
-        { emoji:'⚡', name:'跳绳', unit:'rep', options:[100,200,300,500,1000], calPer:0.1 },
-        { emoji:'🚶‍♀️', name:'快走', unit:'min', options:[15,20,30,45,60], calPer:4 },
-        { emoji:'🚴‍♀️', name:'骑行', unit:'km', options:[3,5,8,10,15,20], calPer:35 },
-        { emoji:'🤸', name:'尊巴舞', unit:'min', options:[20,30,45,60], calPer:7 }
-      ],
-      strength: [
-        { emoji:'🏋️‍♀️', name:'哑铃训练', unit:'set', options:[2,3,4,5], calPer:25 },
-        { emoji:'🦵', name:'深蹲', unit:'rep', options:[15,20,30,50,100], calPer:0.5 },
-        { emoji:'Pull', name:'硬拉', unit:'rep', options:[10,12,15,20], calPer:1.5 },
-        { emoji:'💪', name:'臀桥', unit:'rep', options:[15,20,30,50], calPer:0.4 },
-        { emoji:'🏋️', name:'杠铃划船', unit:'rep', options:[10,12,15,20], calPer:1.2 },
-        { emoji:'🤜', name:'俯卧撑', unit:'rep', options:[10,15,20,30,50], calPer:0.6 }
-      ],
-      core: [
-        { emoji:'🧘', name:'瑜伽', unit:'min', options:[10,15,20,30,45], calPer:3.5 },
-        { emoji:'plank', name:'平板支撑', unit:'min', options:[1,2,3,5], calPer:4 },
-        { emoji:'🌀', name:'卷腹', unit:'rep', options:[10,15,20,30,50], calPer:0.3 },
-        { emoji:'🤸', name:'全身拉伸', unit:'min', options:[5,10,15,20], calPer:2.5 },
-        { emoji:'🎯', name:'俄罗斯转体', unit:'rep', options:[10,15,20,30,50], calPer:0.4 }
-      ]
-    };
+// ============================================================
+// 一人食
+// ============================================================
+function foodHTML(){
+  const meals=getD('meals').filter(m=>m.date===today());
+  const cal=meals.reduce((s,m)=>s+(Number(m.cal)||0),0);
+  const mList=meals.length?meals.map(m=>`<div class="list-item"><div class="info"><div>${m.type} · ${m.content}</div><div class="meta">${m.cal||'-'} 千卡</div></div></div>`).join(''):'<div class="empty">今天还没记录饮食～</div>';
+  const foods=['🍜 番茄鸡蛋面','🥗 牛油果沙拉','🍛 咖喱鸡肉饭','🥟 虾仁馄饨','🍣 三文鱼饭','🍲 菌菇汤泡饭','🥑 牛油果吐司','🍝 奶油意面','🍚 照烧鸡腿饭','🌯 鸡胸肉卷','🫕 韩式拌饭','🍱 日式便当'];
+  return `<section class="section active">
+<div class="page-header"><span class="icon">🍳</span><div><h1>一人食</h1><div class="sub">今天吃什么呢？</div></div></div>
+<div class="card"><div class="card-title">🎲 吃什么转盘</div>
+<div class="wheel-wrap"><div id="wheelResult" class="wheel-text">🍽️</div></div>
+<div style="text-align:center"><button class="btn" onclick="spinWheel()">🎰 转一转</button></div>
+<div id="wheelHistory" style="margin-top:8px;font-size:12px;color:var(--text3);text-align:center"></div>
+</div>
+<div class="card"><div class="card-title">🍽️ 生成今日三餐</div><div style="text-align:center;margin:8px 0"><button class="btn btn-sm" onclick="genMeals()">✨ 随机生成三餐</button></div><div id="genMeals" style="font-size:13px;line-height:1.8"></div></div>
+<div class="card"><div class="card-title">📋 今日饮食 · 🔥${cal}千卡</div>${mList}</div>
+<div class="card"><div class="card-title">🥗 每日搭配推荐</div><div class="row" id="mealPicker" style="gap:6px"></div><div style="margin-top:8px;font-size:13px;text-align:center">点击食物加入今日饮食</div></div>
+</section>`;
+}
+function initFood(){
+  const opts=[{e:'🥣',n:'燕麦碗',cal:280},{e:'🫐',n:'蓝莓',cal:85},{e:'☕',n:'黑咖啡',cal:5},{e:'🥚',n:'水煮蛋',cal:78},{e:'🥑',n:'牛油果',cal:160},{e:'🥗',n:'鸡胸沙拉',cal:320},{e:'🍚',n:'糙米饭',cal:215},{e:'🐟',n:'清蒸鱼',cal:180},{e:'🥦',n:'西兰花',cal:55},{e:'🍎',n:'苹果',cal:95},{e:'🥛',n:'低脂牛奶',cal:120},{e:'🍌',n:'香蕉',cal:105}];
+  document.getElementById('mealPicker').innerHTML=opts.map(o=>`<span class="tag" onclick="addQuickMeal('${o.n}',${o.cal})">${o.e} ${o.n} ${o.cal}千卡</span>`).join('');
+}
+function spinWheel(){
+  const foods=['🍜 番茄鸡蛋面','🥗 牛油果沙拉','🍛 咖喱鸡肉饭','🥟 虾仁馄饨','🍣 三文鱼饭','🍲 菌菇汤泡饭','🥑 牛油果吐司','🍝 奶油意面','🍚 照烧鸡腿饭','🌯 鸡胸肉卷','🫕 韩式拌饭','🍱 日式便当'];
+  const r=foods[Math.floor(Math.random()*foods.length)];
+  document.getElementById('wheelResult').textContent=r;
+  document.getElementById('wheelResult').style.animation='none';
+  setTimeout(()=>document.getElementById('wheelResult').style.animation='bounce 0.5s ease',10);
+}
+function genMeals(){
+  const breakfasts=['燕麦碗+蓝莓+黑咖啡','全麦吐司+牛油果+煎蛋','酸奶碗+格兰诺拉+蜂蜜','小米粥+蒸饺+小菜'];
+  const lunches=['鸡胸沙拉+糙米饭','照烧鸡腿饭+西兰花','三文鱼饭+味增汤','番茄鸡蛋面+凉拌黄瓜'];
+  const dinners=['菌菇汤泡饭','清蒸鱼+炒时蔬','虾仁馄饨','牛油果吐司+蔬菜汤'];
+  document.getElementById('genMeals').innerHTML=`<b>🌅 早餐：</b>${breakfasts[rand(0,3)]}<br><b>☀️ 午餐：</b>${lunches[rand(0,3)]}<br><b>🌙 晚餐：</b>${dinners[rand(0,3)]}`;
+}
+function addQuickMeal(name,cal){
+  const d=getD('meals');d.push({type:'加餐',content:name,cal:String(cal),date:today()});setD('meals',d);
+  renderPage('food');
+}
 
-    function unitLabel(u) { return {min:'分钟',km:'公里',rep:'个',set:'组'}[u]||u; }
+// ============================================================
+// 财务储蓄
+// ============================================================
+function financeHTML(){
+  const money=getD('money');
+  let income=0,outcome=0;
+  money.forEach(m=>{m.type==='收入'?income+=Number(m.amount):outcome+=Number(m.amount)});
+  const mList=money.length?money.slice().reverse().map(m=>`<div class="list-item"><div class="info"><div>${m.tag||'未分类'}</div><div class="meta">${m.date} · ${m.type}</div></div><div style="font-weight:700;color:${m.type==='收入'?'var(--green)':'var(--red)'}">${m.type==='收入'?'+':'-'}¥${m.amount}</div></div>`).join(''):'<div class="empty">还没有记账记录～</div>';
+  const goal=getD('savingsGoal')[0]||{target:10000,current:0};
+  const pct=goal.target?Math.min(Math.round(goal.current/goal.target*100),100):0;
+  const wk=Math.min(Math.ceil((new Date()-new Date(new Date().getFullYear(),0,1))/86400000/7),52);
+  const wkSave=wk*100;
+  return `<section class="section active">
+<div class="page-header"><span class="icon">💰</span><div><h1>财务储蓄</h1><div class="sub">每一笔都清清楚楚</div></div></div>
+<div class="card"><div class="card-title">➕ 记一笔</div>
+<div class="row"><div class="col"><select id="moneyType"><option>支出</option><option>收入</option></select></div><div class="col"><input id="moneyAmount" type="number" placeholder="金额"></div></div>
+<div class="row"><div class="col"><input id="moneyTag" placeholder="分类（餐饮/交通/购物...）"></div><button class="btn btn-sm" onclick="addMoney()">保存</button></div>
+</div>
+<div class="card"><div class="card-title">📊 本月收支</div>
+<div class="stat-row"><div class="stat-item"><div class="val" style="color:var(--green)">¥${income}</div><div class="lbl">收入</div></div><div class="stat-item"><div class="val" style="color:var(--red)">¥${outcome}</div><div class="lbl">支出</div></div><div class="stat-item"><div class="val" style="color:var(--primary-light)">¥${income-outcome}</div><div class="lbl">结余</div></div></div>
+</div>
+<div class="card"><div class="card-title">🎯 储蓄目标</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>¥${goal.current}</span><span>¥${goal.target}</span></div>
+<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+<div style="text-align:center;font-size:12px;color:var(--text3);margin-top:4px">已完成 ${pct}%</div>
+<div class="row" style="margin-top:10px"><div class="col"><input id="saveAmount" type="number" placeholder="存入金额"></div><button class="btn btn-sm" onclick="addSaving()">存入</button></div>
+</div>
+<div class="card"><div class="card-title">📅 52周存钱法</div><div style="font-size:13px;color:var(--text3);margin-bottom:8px">第1周存10元，第2周存20元...第52周存520元，一年存<b style="color:var(--gold)">¥13,780</b>！</div><div style="font-size:13px">📌 当前第 ${wk} 周 · 本周应存：<b style="color:var(--accent)">¥${wk*10}</b> · 累计已存：<b style="color:var(--green)">¥${wkSave}</b></div></div>
+<div class="card"><div class="card-title">📋 记账记录</div>${mList}</div>
+</section>`;
+}
+function initFinance(){}
+function addMoney(){
+  const type=document.getElementById('moneyType').value;
+  const amount=document.getElementById('moneyAmount').value;
+  const tag=document.getElementById('moneyTag').value.trim()||'未分类';
+  if(!amount||amount<=0)return;
+  const d=getD('money');d.push({type,amount,tag,date:today()});setD('money',d);
+  document.getElementById('moneyAmount').value='';document.getElementById('moneyTag').value='';
+  renderPage('finance');
+}
+function addSaving(){
+  const amt=Number(document.getElementById('saveAmount').value);
+  if(!amt||amt<=0)return;
+  let goals=getD('savingsGoal');
+  if(!goals.length)goals=[{target:10000,current:0}];
+  goals[0].current+=amt;setD('savingsGoal',goals);
+  document.getElementById('saveAmount').value='';
+  renderPage('finance');
+}
 
-    let pendingWorkout = null; // 当前弹出面板对应的运动
+// ============================================================
+// 体重管理
+// ============================================================
+function weightHTML(){
+  const records=getD('weightRecords');
+  const latest=records.length?records[records.length-1]:null;
+  const list=records.length?records.slice().reverse().map(r=>`<div class="list-item"><div class="info"><div>${r.weight} kg</div><div class="meta">${r.date}</div></div></div>`).join(''):'<div class="empty">还没有体重记录～</div>';
+  return `<section class="section active">
+<div class="page-header"><span class="icon">⚖️</span><div><h1>体重管理</h1><div class="sub">${latest?`最新: ${latest.weight}kg · ${latest.date}`:'开始记录吧'}</div></div></div>
+<div class="card"><div class="card-title">⚖️ 记录体重</div>
+<div class="row"><div class="col"><input id="weightInput" type="number" step="0.1" placeholder="今日体重 (kg)"></div><button class="btn btn-sm" onclick="addWeight()">记录</button></div>
+</div>
+<div class="card"><div class="card-title">📈 体重趋势</div><div style="text-align:center;padding:10px;font-size:13px;color:var(--text3)">${records.length>=2?`从 ${records[0].weight}kg → ${latest.weight}kg，${(latest.weight-records[0].weight)>=0?'+':''}${(latest.weight-records[0].weight).toFixed(1)}kg`:''}</div></div>
+<div class="card"><div class="card-title">📋 历史记录</div>${list}</div>
+</section>`;
+}
+function initWeight(){}
+function addWeight(){
+  const w=parseFloat(document.getElementById('weightInput').value);
+  if(!w||w<=0)return;
+  const d=getD('weightRecords');d.push({weight:w,date:today()});setD('weightRecords',d);
+  renderPage('weight');
+}
 
-    function renderWorkoutCards() {
-      const renderTags = (arr) => arr.map(w => `
-        <span class="ex-tag" data-ex="${w.name}" onclick="openWorkoutPopup('${w.name}')">
-          <span class="emoji">${w.emoji}</span>${w.name}
-        </span>
-      `).join('');
-      document.getElementById('cardioTags').innerHTML = renderTags(workoutGroups.cardio);
-      document.getElementById('strengthTags').innerHTML = renderTags(workoutGroups.strength);
-      document.getElementById('coreTags').innerHTML = renderTags(workoutGroups.core);
-    }
+// ============================================================
+// 学习打卡
+// ============================================================
+function studyHTML(){
+  const eng=getD('englishStudy').filter(s=>s.date===today());
+  const kor=getD('koreanStudy').filter(s=>s.date===today());
+  return `<section class="section active">
+<div class="page-header"><span class="icon">📚</span><div><h1>学习打卡</h1><div class="sub">每天进步一点点</div></div></div>
+<div class="card"><div class="card-title">🇬🇧 英语学习</div>
+<div class="check-row"><input type="checkbox" ${eng.find(s=>s.name==='背单词')?'checked':''} onchange="toggleStudy('english','背单词')"><span class="${eng.find(s=>s.name==='背单词')?'done':''}">📝 背单词 30个</span></div>
+<div class="check-row"><input type="checkbox" ${eng.find(s=>s.name==='听力练习')?'checked':''} onchange="toggleStudy('english','听力练习')"><span class="${eng.find(s=>s.name==='听力练习')?'done':''}">🎧 听力练习 15min</span></div>
+<div class="check-row"><input type="checkbox" ${eng.find(s=>s.name==='口语跟读')?'checked':''} onchange="toggleStudy('english','口语跟读')"><span class="${eng.find(s=>s.name==='口语跟读')?'done':''}">🗣️ 口语跟读 10min</span></div>
+</div>
+<div class="card"><div class="card-title">🇰🇷 韩语学习</div>
+<div class="check-row"><input type="checkbox" ${kor.find(s=>s.name==='韩语单词')?'checked':''} onchange="toggleStudy('korean','韩语单词')"><span class="${kor.find(s=>s.name==='韩语单词')?'done':''}">📝 韩语单词 20个</span></div>
+<div class="check-row"><input type="checkbox" ${kor.find(s=>s.name==='语法学习')?'checked':''} onchange="toggleStudy('korean','语法学习')"><span class="${kor.find(s=>s.name==='语法学习')?'done':''}">📖 语法学习 20min</span></div>
+<div class="check-row"><input type="checkbox" ${kor.find(s=>s.name==='韩剧跟读')?'checked':''} onchange="toggleStudy('korean','韩剧跟读')"><span class="${kor.find(s=>s.name==='韩剧跟读')?'done':''}">🎬 韩剧跟读 15min</span></div>
+</div>
+</section>`;
+}
+function initStudy(){}
+function toggleStudy(lang,name){
+  const key=lang==='english'?'englishStudy':'koreanStudy';
+  const d=getD(key);const idx=d.findIndex(s=>s.name===name&&s.date===today());
+  if(idx>=0)d.splice(idx,1);else d.push({name,date:today()});
+  setD(key,d);renderPage('study');
+}
 
-    // 查找运动定义
-    function findWorkout(name) {
-      for (const g of Object.values(workoutGroups)) {
-        const found = g.find(w => w.name === name);
-        if (found) return found;
-      }
-      return null;
-    }
+// ============================================================
+// 每日资讯
+// ============================================================
+function newsHTML(){
+  const items=[{t:'🏢 麦肯锡',d:'2026全球趋势报告：AI驱动的新商业范式'},{t:'📊 BCG',d:'中国消费市场2026展望：新中产的消费升级'},{t:'💼 贝恩',d:'2026中国奢侈品市场报告：年轻化与数字化'},{t:'📈 中金公司',d:'下半年宏观经济展望：稳中求进'},{t:'🔬 36氪',d:'每日科技快讯：AIGC创业融资创新高'}];
+  return `<section class="section active">
+<div class="page-header"><span class="icon">📰</span><div><h1>每日资讯</h1><div class="sub">行业报告 · 热点追踪</div></div></div>
+${items.map(i=>`<div class="card"><div class="card-title">${i.t}</div><div style="font-size:14px;color:var(--text2);line-height:1.6">${i.d}</div><div style="margin-top:8px;font-size:11px;color:var(--text3)">${dateStr} · 今日推荐</div></div>`).join('')}
+</section>`;
+}
+function initNews(){}
 
-    function openWorkoutPopup(name) {
-      const w = findWorkout(name);
-      if (!w) return;
-      const todayList = getData('workouts').filter(x => x.date === today());
-      if (todayList.find(x => x.name === name)) {
-        // 已打卡 → 直接取消
-        const d = getData('workouts');
-        const idx = d.findIndex(x => x.name === name && x.date === today());
-        if (idx >= 0) { d.splice(idx,1); setData('workouts',d); renderWorkouts(); }
-        return;
-      }
-      pendingWorkout = w;
-      document.getElementById('popupTitle').innerHTML = `${w.emoji} ${w.name}`;
-      // 渲染选项
-      const optsEl = document.getElementById('popupOptions');
-      optsEl.innerHTML = w.options.map((v,i) => `
-        <button class="option-btn${i===0?' selected':''}" data-val="${v}" onclick="selectOption(this)">${v} ${unitLabel(w.unit)}</button>
-      `).join('');
-      updatePopupCal();
-      document.getElementById('workoutPopup').classList.add('show');
-    }
-
-    function selectOption(btn) {
-      btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      updatePopupCal();
-    }
-
-    function updatePopupCal() {
-      const sel = document.querySelector('#popupOptions .option-btn.selected');
-      if (!sel || !pendingWorkout) return;
-      const val = Number(sel.dataset.val);
-      const cal = Math.round(val * pendingWorkout.calPer);
-      document.getElementById('popupCal').innerHTML = `🔥 预计消耗 <strong>${cal}</strong> 千卡`;
-    }
-
-    function closePopup() {
-      document.getElementById('workoutPopup').classList.remove('show');
-      pendingWorkout = null;
-    }
-
-    function confirmWorkout() {
-      if (!pendingWorkout) return;
-      const sel = document.querySelector('#popupOptions .option-btn.selected');
-      if (!sel) return;
-      const val = Number(sel.dataset.val);
-      const cal = Math.round(val * pendingWorkout.calPer);
-      const label = `${val} ${unitLabel(pendingWorkout.unit)}`;
-      const done = getData('workouts');
-      done.push({ name: pendingWorkout.name, detail: label, cal, date: today() });
-      setData('workouts', done);
-      closePopup();
-      renderWorkouts();
-    }
-
-    function refreshTodayCount() {
-      const list = getData('workouts').filter(w => w.date === today());
-      const count = list.length;
-      const totalCal = list.reduce((s,w) => s + (w.cal||0), 0);
-      document.getElementById('todayCount').textContent = `${count} 项 · 🔥${totalCal}千卡`;
-    }
-
-    function renderWorkouts() {
-      const all = getData('workouts');
-      const todayList = all.filter(w => w.date === today());
-      const todayEl = document.getElementById('workoutDone');
-      if (!todayList.length) {
-        todayEl.innerHTML = '<div class="empty">今天还没有打卡～</div>';
-      } else {
-        todayEl.innerHTML = todayList.map((w) => `
-          <div class="list-item">
-            <div class="info">
-              <div>${w.name} · ${w.detail}</div>
-              <div class="meta">🔥 ${w.cal||0} 千卡</div>
-            </div>
-            <span class="del" onclick="delTodayWorkout('${w.name}')">取消</span>
-          </div>
-        `).join('');
-      }
-      // 回刷标签状态
-      document.querySelectorAll('.ex-tag').forEach(t => {
-        if (todayList.find(x => x.name === t.dataset.ex)) t.classList.add('selected');
-        else t.classList.remove('selected');
-      });
-      refreshTodayCount();
-      // 历史记录
-      const histEl = document.getElementById('workoutHistory');
-      const byDate = {};
-      all.forEach(w => { (byDate[w.date] = byDate[w.date] || []).push(w); });
-      const dates = Object.keys(byDate).sort().reverse();
-      if (!dates.length) {
-        histEl.innerHTML = '<div class="empty">还没有历史记录～</div>';
-      } else {
-        histEl.innerHTML = dates.map(d => {
-          const dayCal = byDate[d].reduce((s,w) => s+(w.cal||0),0);
-          return `
-          <div style="margin-bottom:12px; padding:10px 14px; background:rgba(255,255,255,0.55); border-radius:14px;">
-            <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:11px; color:var(--text-light); font-weight:400;">${byDate[d].length} 项 · 🔥${dayCal}千卡</span></div>
-            <div style="display:flex; flex-wrap:wrap; gap:6px;">
-              ${byDate[d].map(w => `<span class="tag active">${w.name} ${w.detail}</span>`).join('')}
-            </div>
-          </div>
-        `}).join('');
-      }
-    }
-
-    function delTodayWorkout(name) {
-      const d = getData('workouts');
-      const idx = d.findIndex(x => x.name === name && x.date === today());
-      if (idx >= 0) { d.splice(idx, 1); setData('workouts', d); renderWorkouts(); }
-    }
-
-    // 记账
-    function renderMoney() {
-      const list = getData('money');
-      const el = document.getElementById('moneyList');
-      let income=0, outcome=0;
-      list.forEach(m => { m.type==='收入'?income+=Number(m.amount):outcome+=Number(m.amount); });
-      document.getElementById('inTotal').textContent = '¥'+income;
-      document.getElementById('outTotal').textContent = '¥'+outcome;
-      document.getElementById('netTotal').textContent = '¥'+(income-outcome);
-      if (!list.length) { el.innerHTML = '<div class="empty">还没有记账记录～</div>'; return; }
-      el.innerHTML = list.slice().reverse().map((m, idx) => `
-        <div class="list-item">
-          <div class="info">
-            <div>${m.tag || '未分类'}</div>
-            <div class="meta">${m.date} · ${m.type}</div>
-          </div>
-          <div class="amount" style="color:${m.type==='收入'?'#7bb36a':'#d67a8a'}">${m.type==='收入'?'+':'-'}¥${m.amount}</div>
-        </div>
-      `).join('');
-    }
-    function addMoney() {
-      const type = document.getElementById('moneyType').value;
-      const amount = document.getElementById('moneyAmount').value;
-      const tag = document.getElementById('moneyTag').value.trim() || '未分类';
-      if (!amount || amount<=0) return alert('请填写金额');
-      const data = getData('money');
-      data.push({ type, amount, tag, date: today() });
-      setData('money', data);
-      document.getElementById('moneyAmount').value = '';
-      document.getElementById('moneyTag').value = '';
-      renderMoney();
-    }
-
-    // 穿搭建议
-    function genOutfit() {
-      const city = document.getElementById('weatherInput').value.trim() || '深圳';
-      const styles = [
-        { name: '清新通勤风', items: '白 T + 浅蓝牛仔裤 + 小白鞋 + 帆布包', emoji: '👚👖👟' },
-        { name: '温柔奶茶风', items: '针织开衫 + 杏色半裙 + 乐福鞋 + 珍珠耳钉', emoji: '🧶👗🥿' },
-        { name: '利落轻熟风', items: '衬衫 + 西装阔腿裤 + 尖头平底鞋 + 托特包', emoji: '👔👠👜' },
-        { name: '休闲运动风', items: '卫衣 + 鲨鱼裤 + 老爹鞋 + 棒球帽', emoji: '🧢👟🦈' }
-      ];
-      const s = styles[Math.floor(Math.random()*styles.length)];
-      document.getElementById('outfitResult').innerHTML = `
-        <div class="card" style="margin:0;">
-          <div style="font-size:16px; font-weight:700; margin-bottom:8px;">${city} · ${s.name}</div>
-          <div style="font-size:28px; margin:10px 0;">${s.emoji}</div>
-          <div style="font-size:14px; color:var(--text-light); line-height:1.7;">${s.items}</div>
-        </div>
-      `;
-    }
-
-    // 妆容
-    const makeupThemes = [
-      { name: '清透裸妆', desc: '自然底妆 + 奶茶色唇釉 + 大地色眼影，适合日常通勤。' },
-      { name: '蜜桃汽水妆', desc: '橘粉色腮红 + 玻璃唇蜜 + 根根分明睫毛，元气满满。' },
-      { name: '清冷灰粉妆', desc: '灰粉色眼影 + 低饱和唇泥 + 淡眉，高级又温柔。' },
-      { name: '复古红唇妆', desc: '哑光红唇 + 利落眼线 + 白皙底妆，气场全开。' },
-      { name: '韩系水光妆', desc: '水光肌 + 杏色腮红 + 卧蚕，甜妹氛围感。' }
-    ];
-    function randomMakeup() {
-      const t = makeupThemes[Math.floor(Math.random()*makeupThemes.length)];
-      document.getElementById('makeupTheme').textContent = t.name;
-      document.getElementById('makeupDesc').textContent = t.desc;
-    }
-    function saveMakeupNote() {
-      const note = document.getElementById('makeupNote').value.trim();
-      if (!note) return;
-      const data = getData('makeupNotes');
-      data.push({ note, date: today() });
-      setData('makeupNotes', data);
-      document.getElementById('makeupNote').value = '';
-      renderMakeupNotes();
-    }
-    function renderMakeupNotes() {
-      const list = getData('makeupNotes');
-      const el = document.getElementById('makeupNotes');
-      if (!list.length) { el.innerHTML = ''; return; }
-      el.innerHTML = list.slice().reverse().map(n => `
-        <div class="list-item"><div class="info"><div>${n.note}</div><div class="meta">${n.date}</div></div></div>
-      `).join('');
-    }
-
-    // 初始化
-    renderMealPicker();
-    renderMeals();
-    renderWorkoutCards();
-    renderWorkouts();
-    renderMoney();
-    renderMakeupNotes();
-    genOutfit();
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
+// === 启动 ===
+renderPage('dashboard');
+</script>
+<script>
+if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js');}
+</script>
 </body>
 </html>
