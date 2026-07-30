@@ -299,6 +299,39 @@
     }
     .ex-tag .emoji { font-size: 16px; }
     .ex-tag .time { font-size: 11px; opacity: 0.75; }
+
+    /* 弹出选项面板 */
+    .popup-overlay {
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.3); z-index: 100;
+      display: none; align-items: center; justify-content: center;
+    }
+    .popup-overlay.show { display: flex; }
+    .popup-card {
+      background: #fff; border-radius: 22px; padding: 20px;
+      width: 90%; max-width: 360px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+    .popup-card .popup-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .popup-card .popup-subtitle { font-size: 12px; color: var(--text-light); margin-bottom: 14px; }
+    .option-row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .option-btn {
+      padding: 10px 16px; border-radius: 22px; border: 1.5px solid rgba(164,126,196,0.25);
+      background: rgba(255,255,255,0.8); font-size: 13px; cursor: pointer;
+      transition: all 0.2s; font-family: inherit; color: var(--text);
+    }
+    .option-btn:hover { border-color: var(--primary); background: rgba(164,126,196,0.06); }
+    .option-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .popup-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .cal-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 12px;
+      background: #fff3e0; color: #e67e22; font-size: 12px; font-weight: 600;
+      margin-left: auto;
+    }
     .exercise-card {
       background: rgba(255,255,255,0.65);
       border-radius: 16px;
@@ -576,6 +609,20 @@
     </section>
   </main>
 
+  <!-- 运动弹出选择面板 -->
+  <div class="popup-overlay" id="workoutPopup">
+    <div class="popup-card">
+      <div class="popup-title" id="popupTitle"></div>
+      <div class="popup-subtitle">选择具体时长/数量，自动估算消耗热量</div>
+      <div class="option-row" id="popupOptions"></div>
+      <div id="popupCal" style="font-size:13px; color:var(--text-light); margin-bottom:14px;"></div>
+      <div class="popup-actions">
+        <button class="btn btn-secondary" onclick="closePopup()">取消</button>
+        <button class="btn" onclick="confirmWorkout()">✅ 确认打卡</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 侧边栏切换
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -676,64 +723,122 @@
     }
     function delMeal(i) { const d=getData('meals'); d.splice(i,1); setData('meals',d); renderMeals(); }
 
-    // 运动打卡 —— 分类数据
+    // 运动打卡 —— 每种运动有不同计量方式和选项，附带卡路里估算
+    // 单位: min=分钟, km=公里, rep=次/个, set=组
     const workoutGroups = {
       cardio: [
-        { emoji:'💃', name:'爵士舞', time:'30 min' },
-        { emoji:'🏸', name:'羽毛球', time:'40 min' },
-        { emoji:'🏃‍♀️', name:'慢跑', time:'30 min' },
-        { emoji:'🏊‍♀️', name:'游泳', time:'45 min' },
-        { emoji:'⚡', name:'跳绳', time:'20 min' },
-        { emoji:'🚶‍♀️', name:'快走', time:'30 min' },
-        { emoji:'🚴‍♀️', name:'骑行', time:'40 min' },
-        { emoji:'🤸', name:'尊巴舞', time:'25 min' }
+        { emoji:'💃', name:'爵士舞', unit:'min', options:[15,30,45,60], calPer:5 },
+        { emoji:'🏸', name:'羽毛球', unit:'min', options:[20,30,45,60], calPer:6 },
+        { emoji:'🏃‍♀️', name:'慢跑', unit:'km', options:[1,2,3,5,8], calPer:60 },
+        { emoji:'🏊‍♀️', name:'游泳', unit:'min', options:[20,30,45,60], calPer:8 },
+        { emoji:'⚡', name:'跳绳', unit:'rep', options:[100,200,300,500,1000], calPer:0.1 },
+        { emoji:'🚶‍♀️', name:'快走', unit:'min', options:[15,20,30,45,60], calPer:4 },
+        { emoji:'🚴‍♀️', name:'骑行', unit:'km', options:[3,5,8,10,15,20], calPer:35 },
+        { emoji:'🤸', name:'尊巴舞', unit:'min', options:[20,30,45,60], calPer:7 }
       ],
       strength: [
-        { emoji:'🏋️‍♀️', name:'哑铃训练', time:'20 min' },
-        { emoji:'🦵', name:'深蹲', time:'15 min' },
-        { emoji:'Pull', name:'硬拉', time:'15 min' },
-        { emoji:'💪', name:'臀桥', time:'15 min' },
-        { emoji:'🏋️', name:'杠铃划船', time:'20 min' },
-        { emoji:'🤜', name:'俯卧撑', time:'10 min' }
+        { emoji:'🏋️‍♀️', name:'哑铃训练', unit:'set', options:[2,3,4,5], calPer:25 },
+        { emoji:'🦵', name:'深蹲', unit:'rep', options:[15,20,30,50,100], calPer:0.5 },
+        { emoji:'Pull', name:'硬拉', unit:'rep', options:[10,12,15,20], calPer:1.5 },
+        { emoji:'💪', name:'臀桥', unit:'rep', options:[15,20,30,50], calPer:0.4 },
+        { emoji:'🏋️', name:'杠铃划船', unit:'rep', options:[10,12,15,20], calPer:1.2 },
+        { emoji:'🤜', name:'俯卧撑', unit:'rep', options:[10,15,20,30,50], calPer:0.6 }
       ],
       core: [
-        { emoji:'🧘', name:'瑜伽', time:'15 min' },
-        { emoji:'plank', name:'平板支撑', time:'10 min' },
-        { emoji:'🌀', name:'卷腹', time:'10 min' },
-        { emoji:'🤸', name:'全身拉伸', time:'10 min' },
-        { emoji:'🎯', name:'俄罗斯转体', time:'10 min' }
+        { emoji:'🧘', name:'瑜伽', unit:'min', options:[10,15,20,30,45], calPer:3.5 },
+        { emoji:'plank', name:'平板支撑', unit:'min', options:[1,2,3,5], calPer:4 },
+        { emoji:'🌀', name:'卷腹', unit:'rep', options:[10,15,20,30,50], calPer:0.3 },
+        { emoji:'🤸', name:'全身拉伸', unit:'min', options:[5,10,15,20], calPer:2.5 },
+        { emoji:'🎯', name:'俄罗斯转体', unit:'rep', options:[10,15,20,30,50], calPer:0.4 }
       ]
     };
+
+    function unitLabel(u) { return {min:'分钟',km:'公里',rep:'个',set:'组'}[u]||u; }
+
+    let pendingWorkout = null; // 当前弹出面板对应的运动
+
     function renderWorkoutCards() {
       const renderTags = (arr) => arr.map(w => `
-        <span class="ex-tag" data-ex="${w.name}" data-time="${w.time}" onclick="toggleWorkout(this)">
-          <span class="emoji">${w.emoji}</span>${w.name}<span class="time">${w.time}</span>
+        <span class="ex-tag" data-ex="${w.name}" onclick="openWorkoutPopup('${w.name}')">
+          <span class="emoji">${w.emoji}</span>${w.name}
         </span>
       `).join('');
       document.getElementById('cardioTags').innerHTML = renderTags(workoutGroups.cardio);
       document.getElementById('strengthTags').innerHTML = renderTags(workoutGroups.strength);
       document.getElementById('coreTags').innerHTML = renderTags(workoutGroups.core);
     }
-    function toggleWorkout(el) {
-      const name = el.dataset.ex;
-      const time = el.dataset.time;
-      let done = getData('workouts');
-      const idx = done.findIndex(x => x.name === name && x.date === today());
-      if (idx >= 0) {
-        done.splice(idx, 1);
-      } else {
-        done.push({ name, time, date: today() });
+
+    // 查找运动定义
+    function findWorkout(name) {
+      for (const g of Object.values(workoutGroups)) {
+        const found = g.find(w => w.name === name);
+        if (found) return found;
       }
+      return null;
+    }
+
+    function openWorkoutPopup(name) {
+      const w = findWorkout(name);
+      if (!w) return;
+      const todayList = getData('workouts').filter(x => x.date === today());
+      if (todayList.find(x => x.name === name)) {
+        // 已打卡 → 直接取消
+        const d = getData('workouts');
+        const idx = d.findIndex(x => x.name === name && x.date === today());
+        if (idx >= 0) { d.splice(idx,1); setData('workouts',d); renderWorkouts(); }
+        return;
+      }
+      pendingWorkout = w;
+      document.getElementById('popupTitle').innerHTML = `${w.emoji} ${w.name}`;
+      // 渲染选项
+      const optsEl = document.getElementById('popupOptions');
+      optsEl.innerHTML = w.options.map((v,i) => `
+        <button class="option-btn${i===0?' selected':''}" data-val="${v}" onclick="selectOption(this)">${v} ${unitLabel(w.unit)}</button>
+      `).join('');
+      updatePopupCal();
+      document.getElementById('workoutPopup').classList.add('show');
+    }
+
+    function selectOption(btn) {
+      btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      updatePopupCal();
+    }
+
+    function updatePopupCal() {
+      const sel = document.querySelector('#popupOptions .option-btn.selected');
+      if (!sel || !pendingWorkout) return;
+      const val = Number(sel.dataset.val);
+      const cal = Math.round(val * pendingWorkout.calPer);
+      document.getElementById('popupCal').innerHTML = `🔥 预计消耗 <strong>${cal}</strong> 千卡`;
+    }
+
+    function closePopup() {
+      document.getElementById('workoutPopup').classList.remove('show');
+      pendingWorkout = null;
+    }
+
+    function confirmWorkout() {
+      if (!pendingWorkout) return;
+      const sel = document.querySelector('#popupOptions .option-btn.selected');
+      if (!sel) return;
+      const val = Number(sel.dataset.val);
+      const cal = Math.round(val * pendingWorkout.calPer);
+      const label = `${val} ${unitLabel(pendingWorkout.unit)}`;
+      const done = getData('workouts');
+      done.push({ name: pendingWorkout.name, detail: label, cal, date: today() });
       setData('workouts', done);
-      // 直接切 class，不依赖 renderWorkouts 的回刷
-      el.classList.toggle('selected');
-      refreshTodayCount();
+      closePopup();
       renderWorkouts();
     }
+
     function refreshTodayCount() {
-      const count = getData('workouts').filter(w => w.date === today()).length;
-      document.getElementById('todayCount').textContent = count + ' 项';
+      const list = getData('workouts').filter(w => w.date === today());
+      const count = list.length;
+      const totalCal = list.reduce((s,w) => s + (w.cal||0), 0);
+      document.getElementById('todayCount').textContent = `${count} 项 · 🔥${totalCal}千卡`;
     }
+
     function renderWorkouts() {
       const all = getData('workouts');
       const todayList = all.filter(w => w.date === today());
@@ -743,7 +848,10 @@
       } else {
         todayEl.innerHTML = todayList.map((w) => `
           <div class="list-item">
-            <div class="info"><div>${w.name}</div><div class="meta">${w.date} · ${w.time}</div></div>
+            <div class="info">
+              <div>${w.name} · ${w.detail}</div>
+              <div class="meta">🔥 ${w.cal||0} 千卡</div>
+            </div>
             <span class="del" onclick="delTodayWorkout('${w.name}')">取消</span>
           </div>
         `).join('');
@@ -762,16 +870,19 @@
       if (!dates.length) {
         histEl.innerHTML = '<div class="empty">还没有历史记录～</div>';
       } else {
-        histEl.innerHTML = dates.map(d => `
+        histEl.innerHTML = dates.map(d => {
+          const dayCal = byDate[d].reduce((s,w) => s+(w.cal||0),0);
+          return `
           <div style="margin-bottom:12px; padding:10px 14px; background:rgba(255,255,255,0.55); border-radius:14px;">
-            <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:11px; color:var(--text-light); font-weight:400;">${byDate[d].length} 项</span></div>
+            <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:11px; color:var(--text-light); font-weight:400;">${byDate[d].length} 项 · 🔥${dayCal}千卡</span></div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
-              ${byDate[d].map(w => `<span class="tag active">${w.name} · ${w.time}</span>`).join('')}
+              ${byDate[d].map(w => `<span class="tag active">${w.name} ${w.detail}</span>`).join('')}
             </div>
           </div>
-        `).join('');
+        `}).join('');
       }
     }
+
     function delTodayWorkout(name) {
       const d = getData('workouts');
       const idx = d.findIndex(x => x.name === name && x.date === today());
