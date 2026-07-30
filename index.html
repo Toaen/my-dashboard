@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的生活工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#a47ec4" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="我的工作台" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(180deg, #e8dff7 0%, #f7f2fa 40%, #faeef7 100%);
+      --sidebar-bg: rgba(255, 255, 255, 0.65);
+      --card-bg: rgba(255, 255, 255, 0.82);
+      --primary: #a47ec4;
+      --primary-dark: #8c65ac;
+      --accent: #e8a5d0;
+      --text: #4a3f5c;
+      --text-light: #7d7193;
+      --shadow: 0 8px 32px rgba(164, 126, 196, 0.15);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* 左侧边栏 */
+    .sidebar {
+      width: 90px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 0 18px;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(164,126,196,0.3);
+    }
+
+    .nav-item {
+      width: 66px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 6px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      color: var(--text-light);
+      user-select: none;
+    }
+    .nav-item .icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.25s ease;
+    }
+    .nav-item .label { font-size: 11px; font-weight: 500; }
+    .nav-item:hover { color: var(--primary); }
+    .nav-item:hover .icon { background: rgba(164,126,196,0.12); }
+    .nav-item.active {
+      color: var(--primary-dark);
+    }
+    .nav-item.active .icon {
+      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(164,126,196,0.35);
+    }
+
+    /* 主内容区 */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 26px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .header .title-icon {
+      font-size: 28px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .header .subtitle {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section { display: none; animation: fadeIn 0.35s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* 表单通用 */
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(164,126,196,0.25);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.7);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(164,126,196,0.12);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(164,126,196,0.35);
+      transition: transform 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-secondary {
+      background: rgba(164,126,196,0.12);
+      color: var(--primary-dark);
+      box-shadow: none;
+    }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .col-2 { flex: 1; min-width: 140px; }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(164,126,196,0.12);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 500;
+      margin: 0 6px 8px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag.active { background: var(--primary); color: #fff; }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 14px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .list-item .info { display: flex; flex-direction: column; }
+    .list-item .meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+    .list-item .amount { font-weight: 700; font-size: 16px; }
+    .list-item .del { color: #c97a9a; cursor: pointer; font-size: 13px; }
+
+    .empty { text-align: center; color: var(--text-light); font-size: 13px; padding: 18px; }
+
+    .fortune-score {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .fortune-score .item { display: flex; flex-direction: column; gap: 6px; }
+    .fortune-score .num {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700; margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(164,126,196,0.3);
+    }
+    .fortune-score .label { font-size: 12px; color: var(--text-light); }
+
+    .advice-list { list-style: none; }
+    .advice-list li {
+      padding: 10px 0; border-bottom: 1px solid rgba(164,126,196,0.1);
+      font-size: 14px; display: flex; gap: 8px; align-items: flex-start;
+    }
+    .advice-list li:last-child { border: none; }
+
+    .exercise-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .exercise-card {
+      background: rgba(255,255,255,0.65);
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid transparent;
+    }
+    .exercise-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(164,126,196,0.15); }
+    .exercise-card.selected { border-color: var(--primary); background: rgba(164,126,196,0.08); }
+    .exercise-card .emoji { font-size: 30px; margin-bottom: 6px; }
+    .exercise-card .name { font-size: 13px; font-weight: 600; }
+    .exercise-card .time { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+    .outfit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+    }
+    .outfit-card {
+      background: rgba(255,255,255,0.65);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .outfit-card .emoji { font-size: 32px; margin-bottom: 6px; }
+    .outfit-card .name { font-weight: 600; }
+
+    @media (max-width: 640px) {
+      /* 导航栏始终保持在左侧，不切换到顶部 */
+      .sidebar {
+        width: 64px;
+        padding: 16px 0 10px;
+        gap: 10px;
+      }
+      .avatar { width: 40px; height: 40px; font-size: 18px; margin-bottom: 6px; }
+      .nav-item { width: 48px; padding: 6px 2px; }
+      .nav-item .icon { width: 32px; height: 32px; font-size: 16px; border-radius: 12px; }
+      .nav-item .label { font-size: 9px; }
+      .main { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="avatar">我</div>
+    <div class="nav-item active" data-page="fortune">
+      <div class="icon">🔮</div>
+      <span class="label">运势</span>
+    </div>
+    <div class="nav-item" data-page="diet">
+      <div class="icon">🥗</div>
+      <span class="label">饮食</span>
+    </div>
+    <div class="nav-item" data-page="workout">
+      <div class="icon">🧘‍♀️</div>
+      <span class="label">塑型运动</span>
+    </div>
+    <div class="nav-item" data-page="money">
+      <div class="icon">💰</div>
+      <span class="label">记账</span>
+    </div>
+    <div class="nav-item" data-page="outfit">
+      <div class="icon">👗</div>
+      <span class="label">穿搭</span>
+    </div>
+    <div class="nav-item" data-page="makeup">
+      <div class="icon">💄</div>
+      <span class="label">妆容</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- 运势 -->
+    <section id="fortune" class="section active">
+      <div class="header">
+        <span class="title-icon">🔮</span>
+        <div>
+          <h1>今日运势</h1>
+          <div class="subtitle" id="fortuneDate"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">✨ 综合评分</div>
+        <div class="fortune-score">
+          <div class="item"><div class="num" id="overall">88</div><span class="label">综合</span></div>
+          <div class="item"><div class="num" id="love">92</div><span class="label">爱情</span></div>
+          <div class="item"><div class="num" id="career">85</div><span class="label">事业</span></div>
+          <div class="item"><div class="num" id="wealth">79</div><span class="label">财富</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💡 今日建议</div>
+        <ul class="advice-list">
+          <li><span>🌟</span> 今日适合穿浅色系衣物，提升个人气场。</li>
+          <li><span>🍀</span> 遇到小问题时保持耐心，会有贵人相助。</li>
+          <li><span>⚡</span> 下午 2-4 点是效率高峰，安排重要事项。</li>
+          <li><span>💜</span> 睡前做 5 分钟冥想，助眠又养心。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 饮食 -->
+    <section id="diet" class="section">
+      <div class="header">
+        <span class="title-icon">🥗</span>
+        <div>
+          <h1>饮食记录</h1>
+          <div class="subtitle">记录一日三餐，吃得健康又好看</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍽️ 今天吃了什么</div>
+        <select id="mealType">
+          <option value="早餐">早餐</option>
+          <option value="午餐">午餐</option>
+          <option value="晚餐">晚餐</option>
+          <option value="加餐">加餐</option>
+        </select>
+        <input type="text" id="mealContent" placeholder="例如：燕麦碗 + 蓝莓 + 黑咖啡" />
+        <input type="number" id="mealCal" placeholder="估算热量（千卡）" />
+        <button class="btn" onclick="addMeal()">➕ 添加记录</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🥗 每日搭配推荐（点击加入今日）</div>
+        <p style="font-size:12px; color:var(--text-light); margin-bottom:12px;">点击下方食物可直接添加到今日饮食，热量自动计算</p>
+        <div id="mealPicker" class="exercise-grid"></div>
+        <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:rgba(164,126,196,0.08); border-radius:14px;">
+          <span style="font-size:13px; color:var(--text-light);">今日累计热量</span>
+          <span id="todayCal" style="font-size:18px; font-weight:700; color:var(--primary-dark);">0 千卡</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 今日饮食清单</div>
+        <div id="mealList"><div class="empty">还没有记录哦～</div></div>
+      </div>
+    </section>
+
+    <!-- 塑型运动 -->
+    <section id="workout" class="section">
+      <div class="header">
+        <span class="title-icon">🧘‍♀️</span>
+        <div>
+          <h1>塑型运动</h1>
+          <div class="subtitle">点击运动卡片即可打卡，记录每一天的坚持</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏃‍♀️ 有氧运动</div>
+        <div class="exercise-grid" id="cardioGrid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💪 力量训练</div>
+        <div class="exercise-grid" id="strengthGrid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧘 核心与柔韧</div>
+        <div class="exercise-grid" id="coreGrid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 今日打卡</div>
+        <div id="workoutDone"><div class="empty">今天还没有打卡～</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗓️ 历史记录</div>
+        <p style="font-size:12px; color:var(--text-light); margin-bottom:12px;">按日期查看每一天的运动记录</p>
+        <div id="workoutHistory"><div class="empty">还没有历史记录～</div></div>
+      </div>
+    </section>
+
+    <!-- 记账 -->
+    <section id="money" class="section">
+      <div class="header">
+        <span class="title-icon">💰</span>
+        <div>
+          <h1>记账本</h1>
+          <div class="subtitle">每一笔都清清楚楚</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ 记一笔</div>
+        <div class="row">
+          <div class="col-2">
+            <select id="moneyType">
+              <option value="支出">支出</option>
+              <option value="收入">收入</option>
+            </select>
+          </div>
+          <div class="col-2">
+            <input type="number" id="moneyAmount" placeholder="金额" />
+          </div>
+        </div>
+        <input type="text" id="moneyTag" placeholder="分类：餐饮 / 交通 / 购物 / 美妆…" />
+        <button class="btn" onclick="addMoney()">📝 保存</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 本月收支</div>
+        <div class="row" style="justify-content:space-around; text-align:center; margin-bottom:12px;">
+          <div><div style="font-size:22px; font-weight:700; color:#7bb36a;" id="inTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">收入</div></div>
+          <div><div style="font-size:22px; font-weight:700; color:#d67a8a;" id="outTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">支出</div></div>
+          <div><div style="font-size:22px; font-weight:700; color:var(--primary-dark);" id="netTotal">¥0</div><div style="font-size:12px; color:var(--text-light);">结余</div></div>
+        </div>
+        <div id="moneyList"><div class="empty">还没有记账记录～</div></div>
+      </div>
+    </section>
+
+    <!-- 穿搭 -->
+    <section id="outfit" class="section">
+      <div class="header">
+        <span class="title-icon">👗</span>
+        <div>
+          <h1>今日穿搭</h1>
+          <div class="subtitle">根据天气和心情搭配一身</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌤️ 天气参考</div>
+        <input type="text" id="weatherInput" placeholder="输入城市，例如：深圳" value="深圳" />
+        <button class="btn" onclick="genOutfit()">✨ 生成穿搭建议</button>
+        <div id="outfitResult" style="margin-top:16px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧥 我的衣橱灵感</div>
+        <div class="outfit-grid">
+          <div class="outfit-card"><div class="emoji">👚</div><div class="name">白 T 恤</div></div>
+          <div class="outfit-card"><div class="emoji">👖</div><div class="name">阔腿裤</div></div>
+          <div class="outfit-card"><div class="emoji">🧥</div><div class="name">薄风衣</div></div>
+          <div class="outfit-card"><div class="emoji">👟</div><div class="name">小白鞋</div></div>
+          <div class="outfit-card"><div class="emoji">👜</div><div class="name">托特包</div></div>
+          <div class="outfit-card"><div class="emoji">🧢</div><div class="name">棒球帽</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 妆容 -->
+    <section id="makeup" class="section">
+      <div class="header">
+        <span class="title-icon">💄</span>
+        <div>
+          <h1>妆容灵感</h1>
+          <div class="subtitle">每天一个妆容主题，记录好心情</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎨 今日妆容主题</div>
+        <div id="makeupTheme" style="font-size:18px; font-weight:700; color:var(--primary-dark); margin-bottom:10px;">清透裸妆</div>
+        <p style="font-size:14px; color:var(--text-light); line-height:1.7;" id="makeupDesc">
+          以自然底妆为主，搭配奶茶色唇釉和大地色眼影，适合日常通勤。
+        </p>
+        <button class="btn" onclick="randomMakeup()">🎲 换一个灵感</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📝 妆容日记</div>
+        <textarea id="makeupNote" placeholder="今天用了什么新品？效果怎么样？"></textarea>
+        <button class="btn" onclick="saveMakeupNote()">💾 保存日记</button>
+        <div id="makeupNotes" style="margin-top:16px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 侧边栏切换
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById(item.dataset.page).classList.add('active');
+      });
+    });
+
+    // 工具函数
+    const today = () => new Date().toISOString().split('T')[0];
+    const getData = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+    const setData = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+
+    // 运势日期
+    const now = new Date();
+    const week = ['日','一','二','三','四','五','六'];
+    document.getElementById('fortuneDate').textContent =
+      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 · 星期${week[now.getDay()]} · 今天也要好好爱自己呀`;
+
+    // 随机运势分
+    function randScore() { return Math.floor(Math.random()*20)+80; }
+    ['overall','love','career','wealth'].forEach(id => document.getElementById(id).textContent = randScore());
+
+    // 饮食
+    const mealOptions = [
+      { emoji:'🥣', name:'燕麦碗', cal:280 },
+      { emoji:'🫐', name:'蓝莓', cal:85 },
+      { emoji:'☕', name:'黑咖啡', cal:5 },
+      { emoji:'🥚', name:'水煮蛋', cal:78 },
+      { emoji:'🥑', name:'牛油果', cal:160 },
+      { emoji:'🥗', name:'鸡胸沙拉', cal:320 },
+      { emoji:'🍚', name:'糙米饭', cal:215 },
+      { emoji:'🐟', name:'清蒸鱼', cal:180 },
+      { emoji:'🥦', name:'西兰花', cal:55 },
+      { emoji:'🍅', name:'番茄', cal:22 },
+      { emoji:'🍎', name:'苹果', cal:95 },
+      { emoji:'🥛', name:'低脂牛奶', cal:120 },
+      { emoji:'🍞', name:'全麦面包', cal:130 },
+      { emoji:'🍌', name:'香蕉', cal:105 },
+      { emoji:'🥕', name:'胡萝卜', cal:40 },
+      { emoji:'🍇', name:'葡萄', cal:104 }
+    ];
+    function renderMealPicker() {
+      document.getElementById('mealPicker').innerHTML = mealOptions.map(o => `
+        <div class="exercise-card" onclick="pickMeal('${o.name}', ${o.cal})">
+          <div class="emoji">${o.emoji}</div>
+          <div class="name">${o.name}</div>
+          <div class="time">${o.cal} 千卡</div>
+        </div>
+      `).join('');
+    }
+    function pickMeal(name, cal) {
+      const hour = new Date().getHours();
+      let type = '加餐';
+      if (hour < 10) type = '早餐';
+      else if (hour < 14) type = '午餐';
+      else if (hour < 21) type = '晚餐';
+      const data = getData('meals');
+      data.push({ type, content: name, cal: String(cal), date: today() });
+      setData('meals', data);
+      renderMeals();
+      updateTodayCal();
+    }
+    function updateTodayCal() {
+      const data = getData('meals').filter(m => m.date === today());
+      const total = data.reduce((s,m) => s + (Number(m.cal)||0), 0);
+      document.getElementById('todayCal').textContent = total + ' 千卡';
+    }
+    function renderMeals() {
+      const list = getData('meals');
+      const el = document.getElementById('mealList');
+      if (!list.length) { el.innerHTML = '<div class="empty">还没有记录哦～</div>'; updateTodayCal(); return; }
+      el.innerHTML = list.slice().reverse().map((m, idx) => `
+        <div class="list-item">
+          <div class="info">
+            <div>${m.type} · ${m.content}</div>
+            <div class="meta">${m.date} · ${m.cal || '-'} 千卡</div>
+          </div>
+          <span class="del" onclick="delMeal(${list.length-1-idx})">删除</span>
+        </div>
+      `).join('');
+      updateTodayCal();
+    }
+    function addMeal() {
+      const type = document.getElementById('mealType').value;
+      const content = document.getElementById('mealContent').value.trim();
+      const cal = document.getElementById('mealCal').value.trim();
+      if (!content) return alert('请填写吃了什么');
+      const data = getData('meals');
+      data.push({ type, content, cal, date: today() });
+      setData('meals', data);
+      document.getElementById('mealContent').value = '';
+      document.getElementById('mealCal').value = '';
+      renderMeals();
+    }
+    function delMeal(i) { const d=getData('meals'); d.splice(i,1); setData('meals',d); renderMeals(); }
+
+    // 运动打卡 —— 分类数据
+    const workoutGroups = {
+      cardio: [
+        { emoji:'💃', name:'爵士舞', time:'30 min' },
+        { emoji:'🏸', name:'羽毛球', time:'40 min' },
+        { emoji:'🏃‍♀️', name:'慢跑', time:'30 min' },
+        { emoji:'🏊‍♀️', name:'游泳', time:'45 min' },
+        { emoji:'⚡', name:'跳绳', time:'20 min' },
+        { emoji:'🚶‍♀️', name:'快走', time:'30 min' },
+        { emoji:'🚴‍♀️', name:'骑行', time:'40 min' },
+        { emoji:'🤸', name:'尊巴舞', time:'25 min' }
+      ],
+      strength: [
+        { emoji:'🏋️‍♀️', name:'哑铃训练', time:'20 min' },
+        { emoji:'🦵', name:'深蹲', time:'15 min' },
+        { emoji:'Pull', name:'硬拉', time:'15 min' },
+        { emoji:'💪', name:'臀桥', time:'15 min' },
+        { emoji:'🏋️', name:'杠铃划船', time:'20 min' },
+        { emoji:'🤜', name:'俯卧撑', time:'10 min' }
+      ],
+      core: [
+        { emoji:'🧘', name:'瑜伽', time:'15 min' },
+        { emoji:' plank', name:'平板支撑', time:'10 min' },
+        { emoji:'🌀', name:'卷腹', time:'10 min' },
+        { emoji:'🤸', name:'全身拉伸', time:'10 min' },
+        { emoji:'🎯', name:'俄罗斯转体', time:'10 min' }
+      ]
+    };
+    function renderWorkoutCards() {
+      const render = (arr) => arr.map(w => `
+        <div class="exercise-card" data-ex="${w.name}" data-time="${w.time}" onclick="toggleWorkout(this)">
+          <div class="emoji">${w.emoji}</div>
+          <div class="name">${w.name}</div>
+          <div class="time">${w.time}</div>
+        </div>
+      `).join('');
+      document.getElementById('cardioGrid').innerHTML = render(workoutGroups.cardio);
+      document.getElementById('strengthGrid').innerHTML = render(workoutGroups.strength);
+      document.getElementById('coreGrid').innerHTML = render(workoutGroups.core);
+    }
+    function toggleWorkout(el) {
+      const name = el.dataset.ex;
+      const time = el.dataset.time;
+      const done = getData('workouts');
+      const idx = done.findIndex(x => x.name === name && x.date === today());
+      if (idx >= 0) {
+        done.splice(idx, 1);
+        el.classList.remove('selected');
+      } else {
+        done.push({ name, time, date: today() });
+        el.classList.add('selected');
+      }
+      setData('workouts', done);
+      renderWorkouts();
+    }
+    function renderWorkouts() {
+      const all = getData('workouts');
+      const todayList = all.filter(w => w.date === today());
+      const todayEl = document.getElementById('workoutDone');
+      if (!todayList.length) {
+        todayEl.innerHTML = '<div class="empty">今天还没有打卡～</div>';
+      } else {
+        todayEl.innerHTML = todayList.map((w, i) => `
+          <div class="list-item">
+            <div class="info"><div>${w.name}</div><div class="meta">${w.date} · ${w.time}</div></div>
+            <span class="del" onclick="delTodayWorkout('${w.name}')">取消</span>
+          </div>
+        `).join('');
+      }
+      // 标记今日已打卡的卡片
+      document.querySelectorAll('.exercise-card').forEach(c => {
+        if (todayList.find(x => x.name === c.dataset.ex)) c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+      // 历史记录（按日期分组，倒序）
+      const histEl = document.getElementById('workoutHistory');
+      const byDate = {};
+      all.forEach(w => { (byDate[w.date] = byDate[w.date] || []).push(w); });
+      const dates = Object.keys(byDate).sort().reverse();
+      if (!dates.length) {
+        histEl.innerHTML = '<div class="empty">还没有历史记录～</div>';
+      } else {
+        histEl.innerHTML = dates.map(d => `
+          <div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.55); border-radius:14px;">
+            <div style="font-weight:700; font-size:14px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:12px; color:var(--text-light); font-weight:400;">共 ${byDate[d].length} 项</span></div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              ${byDate[d].map(w => `<span class="tag active">${w.name} · ${w.time}</span>`).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+    function delTodayWorkout(name) {
+      const d = getData('workouts');
+      const idx = d.findIndex(x => x.name === name && x.date === today());
+      if (idx >= 0) { d.splice(idx, 1); setData('workouts', d); renderWorkouts(); }
+    }
+
+    // 记账
+    function renderMoney() {
+      const list = getData('money');
+      const el = document.getElementById('moneyList');
+      let income=0, outcome=0;
+      list.forEach(m => { m.type==='收入'?income+=Number(m.amount):outcome+=Number(m.amount); });
+      document.getElementById('inTotal').textContent = '¥'+income;
+      document.getElementById('outTotal').textContent = '¥'+outcome;
+      document.getElementById('netTotal').textContent = '¥'+(income-outcome);
+      if (!list.length) { el.innerHTML = '<div class="empty">还没有记账记录～</div>'; return; }
+      el.innerHTML = list.slice().reverse().map((m, idx) => `
+        <div class="list-item">
+          <div class="info">
+            <div>${m.tag || '未分类'}</div>
+            <div class="meta">${m.date} · ${m.type}</div>
+          </div>
+          <div class="amount" style="color:${m.type==='收入'?'#7bb36a':'#d67a8a'}">${m.type==='收入'?'+':'-'}¥${m.amount}</div>
+        </div>
+      `).join('');
+    }
+    function addMoney() {
+      const type = document.getElementById('moneyType').value;
+      const amount = document.getElementById('moneyAmount').value;
+      const tag = document.getElementById('moneyTag').value.trim() || '未分类';
+      if (!amount || amount<=0) return alert('请填写金额');
+      const data = getData('money');
+      data.push({ type, amount, tag, date: today() });
+      setData('money', data);
+      document.getElementById('moneyAmount').value = '';
+      document.getElementById('moneyTag').value = '';
+      renderMoney();
+    }
+
+    // 穿搭建议
+    function genOutfit() {
+      const city = document.getElementById('weatherInput').value.trim() || '深圳';
+      const styles = [
+        { name: '清新通勤风', items: '白 T + 浅蓝牛仔裤 + 小白鞋 + 帆布包', emoji: '👚👖👟' },
+        { name: '温柔奶茶风', items: '针织开衫 + 杏色半裙 + 乐福鞋 + 珍珠耳钉', emoji: '🧶👗🥿' },
+        { name: '利落轻熟风', items: '衬衫 + 西装阔腿裤 + 尖头平底鞋 + 托特包', emoji: '👔👠👜' },
+        { name: '休闲运动风', items: '卫衣 + 鲨鱼裤 + 老爹鞋 + 棒球帽', emoji: '🧢👟🦈' }
+      ];
+      const s = styles[Math.floor(Math.random()*styles.length)];
+      document.getElementById('outfitResult').innerHTML = `
+        <div class="card" style="margin:0;">
+          <div style="font-size:16px; font-weight:700; margin-bottom:8px;">${city} · ${s.name}</div>
+          <div style="font-size:28px; margin:10px 0;">${s.emoji}</div>
+          <div style="font-size:14px; color:var(--text-light); line-height:1.7;">${s.items}</div>
+        </div>
+      `;
+    }
+
+    // 妆容
+    const makeupThemes = [
+      { name: '清透裸妆', desc: '自然底妆 + 奶茶色唇釉 + 大地色眼影，适合日常通勤。' },
+      { name: '蜜桃汽水妆', desc: '橘粉色腮红 + 玻璃唇蜜 + 根根分明睫毛，元气满满。' },
+      { name: '清冷灰粉妆', desc: '灰粉色眼影 + 低饱和唇泥 + 淡眉，高级又温柔。' },
+      { name: '复古红唇妆', desc: '哑光红唇 + 利落眼线 + 白皙底妆，气场全开。' },
+      { name: '韩系水光妆', desc: '水光肌 + 杏色腮红 + 卧蚕，甜妹氛围感。' }
+    ];
+    function randomMakeup() {
+      const t = makeupThemes[Math.floor(Math.random()*makeupThemes.length)];
+      document.getElementById('makeupTheme').textContent = t.name;
+      document.getElementById('makeupDesc').textContent = t.desc;
+    }
+    function saveMakeupNote() {
+      const note = document.getElementById('makeupNote').value.trim();
+      if (!note) return;
+      const data = getData('makeupNotes');
+      data.push({ note, date: today() });
+      setData('makeupNotes', data);
+      document.getElementById('makeupNote').value = '';
+      renderMakeupNotes();
+    }
+    function renderMakeupNotes() {
+      const list = getData('makeupNotes');
+      const el = document.getElementById('makeupNotes');
+      if (!list.length) { el.innerHTML = ''; return; }
+      el.innerHTML = list.slice().reverse().map(n => `
+        <div class="list-item"><div class="info"><div>${n.note}</div><div class="meta">${n.date}</div></div></div>
+      `).join('');
+    }
+
+    // 初始化
+    renderMealPicker();
+    renderMeals();
+    renderWorkoutCards();
+    renderWorkouts();
+    renderMoney();
+    renderMakeupNotes();
+    genOutfit();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>

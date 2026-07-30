@@ -1,0 +1,22 @@
+{
+  "name": "我的生活工作台",
+  "short_name": "工作台",
+  "description": "运势、饮食、运动、记账、穿搭、妆容一站式管理",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f2fa",
+  "theme_color": "#a47ec4",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
