@@ -252,11 +252,53 @@
     }
     .advice-list li:last-child { border: none; }
 
-    .exercise-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 12px;
+    /* 折叠面板 */
+    .collapse-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 8px 0;
+      user-select: none;
     }
+    .collapse-header .arrow {
+      transition: transform 0.25s;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    .collapse-header.open .arrow { transform: rotate(90deg); }
+    .collapse-body { display: none; }
+    .collapse-body.open { display: block; }
+
+    /* 运动标签列表 */
+    .exercise-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .ex-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.65);
+      border: 1.5px solid rgba(164,126,196,0.2);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .ex-tag:hover { border-color: var(--primary); background: rgba(164,126,196,0.06); }
+    .ex-tag.selected {
+      background: linear-gradient(135deg, #e8a5d0, #a47ec4);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 3px 10px rgba(164,126,196,0.3);
+    }
+    .ex-tag .emoji { font-size: 16px; }
+    .ex-tag .time { font-size: 11px; opacity: 0.75; }
     .exercise-card {
       background: rgba(255,255,255,0.65);
       border-radius: 16px;
@@ -403,28 +445,43 @@
         <span class="title-icon">🧘‍♀️</span>
         <div>
           <h1>塑型运动</h1>
-          <div class="subtitle">点击运动卡片即可打卡，记录每一天的坚持</div>
+          <div class="subtitle">点击标签打卡/取消，每天坚持记录</div>
+        </div>
+      </div>
+      <!-- 折叠面板 -->
+      <div class="card">
+        <div class="collapse-header open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+          <div class="card-title" style="margin-bottom:0;">🏃‍♀️ 有氧运动</div>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapse-body open">
+          <div class="exercise-tags" id="cardioTags"></div>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🏃‍♀️ 有氧运动</div>
-        <div class="exercise-grid" id="cardioGrid"></div>
+        <div class="collapse-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+          <div class="card-title" style="margin-bottom:0;">💪 力量训练</div>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapse-body">
+          <div class="exercise-tags" id="strengthTags"></div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-title">💪 力量训练</div>
-        <div class="exercise-grid" id="strengthGrid"></div>
+        <div class="collapse-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+          <div class="card-title" style="margin-bottom:0;">🧘 核心与柔韧</div>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapse-body">
+          <div class="exercise-tags" id="coreTags"></div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-title">🧘 核心与柔韧</div>
-        <div class="exercise-grid" id="coreGrid"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">📅 今日打卡</div>
+        <div class="card-title">📅 今日打卡 <span id="todayCount" style="font-size:13px;color:var(--text-light);font-weight:400;">0 项</span></div>
         <div id="workoutDone"><div class="empty">今天还没有打卡～</div></div>
       </div>
       <div class="card">
         <div class="card-title">🗓️ 历史记录</div>
-        <p style="font-size:12px; color:var(--text-light); margin-bottom:12px;">按日期查看每一天的运动记录</p>
         <div id="workoutHistory"><div class="empty">还没有历史记录～</div></div>
       </div>
     </section>
@@ -641,38 +698,41 @@
       ],
       core: [
         { emoji:'🧘', name:'瑜伽', time:'15 min' },
-        { emoji:' plank', name:'平板支撑', time:'10 min' },
+        { emoji:'plank', name:'平板支撑', time:'10 min' },
         { emoji:'🌀', name:'卷腹', time:'10 min' },
         { emoji:'🤸', name:'全身拉伸', time:'10 min' },
         { emoji:'🎯', name:'俄罗斯转体', time:'10 min' }
       ]
     };
     function renderWorkoutCards() {
-      const render = (arr) => arr.map(w => `
-        <div class="exercise-card" data-ex="${w.name}" data-time="${w.time}" onclick="toggleWorkout(this)">
-          <div class="emoji">${w.emoji}</div>
-          <div class="name">${w.name}</div>
-          <div class="time">${w.time}</div>
-        </div>
+      const renderTags = (arr) => arr.map(w => `
+        <span class="ex-tag" data-ex="${w.name}" data-time="${w.time}" onclick="toggleWorkout(this)">
+          <span class="emoji">${w.emoji}</span>${w.name}<span class="time">${w.time}</span>
+        </span>
       `).join('');
-      document.getElementById('cardioGrid').innerHTML = render(workoutGroups.cardio);
-      document.getElementById('strengthGrid').innerHTML = render(workoutGroups.strength);
-      document.getElementById('coreGrid').innerHTML = render(workoutGroups.core);
+      document.getElementById('cardioTags').innerHTML = renderTags(workoutGroups.cardio);
+      document.getElementById('strengthTags').innerHTML = renderTags(workoutGroups.strength);
+      document.getElementById('coreTags').innerHTML = renderTags(workoutGroups.core);
     }
     function toggleWorkout(el) {
       const name = el.dataset.ex;
       const time = el.dataset.time;
-      const done = getData('workouts');
+      let done = getData('workouts');
       const idx = done.findIndex(x => x.name === name && x.date === today());
       if (idx >= 0) {
         done.splice(idx, 1);
-        el.classList.remove('selected');
       } else {
         done.push({ name, time, date: today() });
-        el.classList.add('selected');
       }
       setData('workouts', done);
+      // 直接切 class，不依赖 renderWorkouts 的回刷
+      el.classList.toggle('selected');
+      refreshTodayCount();
       renderWorkouts();
+    }
+    function refreshTodayCount() {
+      const count = getData('workouts').filter(w => w.date === today()).length;
+      document.getElementById('todayCount').textContent = count + ' 项';
     }
     function renderWorkouts() {
       const all = getData('workouts');
@@ -681,19 +741,20 @@
       if (!todayList.length) {
         todayEl.innerHTML = '<div class="empty">今天还没有打卡～</div>';
       } else {
-        todayEl.innerHTML = todayList.map((w, i) => `
+        todayEl.innerHTML = todayList.map((w) => `
           <div class="list-item">
             <div class="info"><div>${w.name}</div><div class="meta">${w.date} · ${w.time}</div></div>
             <span class="del" onclick="delTodayWorkout('${w.name}')">取消</span>
           </div>
         `).join('');
       }
-      // 标记今日已打卡的卡片
-      document.querySelectorAll('.exercise-card').forEach(c => {
-        if (todayList.find(x => x.name === c.dataset.ex)) c.classList.add('selected');
-        else c.classList.remove('selected');
+      // 回刷标签状态
+      document.querySelectorAll('.ex-tag').forEach(t => {
+        if (todayList.find(x => x.name === t.dataset.ex)) t.classList.add('selected');
+        else t.classList.remove('selected');
       });
-      // 历史记录（按日期分组，倒序）
+      refreshTodayCount();
+      // 历史记录
       const histEl = document.getElementById('workoutHistory');
       const byDate = {};
       all.forEach(w => { (byDate[w.date] = byDate[w.date] || []).push(w); });
@@ -702,9 +763,9 @@
         histEl.innerHTML = '<div class="empty">还没有历史记录～</div>';
       } else {
         histEl.innerHTML = dates.map(d => `
-          <div style="margin-bottom:14px; padding:12px 14px; background:rgba(255,255,255,0.55); border-radius:14px;">
-            <div style="font-weight:700; font-size:14px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:12px; color:var(--text-light); font-weight:400;">共 ${byDate[d].length} 项</span></div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <div style="margin-bottom:12px; padding:10px 14px; background:rgba(255,255,255,0.55); border-radius:14px;">
+            <div style="font-weight:700; font-size:13px; margin-bottom:6px; color:var(--primary-dark);">📅 ${d} <span style="font-size:11px; color:var(--text-light); font-weight:400;">${byDate[d].length} 项</span></div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
               ${byDate[d].map(w => `<span class="tag active">${w.name} · ${w.time}</span>`).join('')}
             </div>
           </div>
